@@ -5,6 +5,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"net/http/httputil"
 	"time"
 
 	bolt "github.com/boltdb/bolt"
@@ -27,6 +28,11 @@ func main() {
 		log.Fatalf("Error connecting to boltdb (%s)", err)
 	}
 
+	// TODO: I don't think that NATS will broadcast to this channel.
+	// multiple goroutines are gonna be waiting on this channel.
+	// all of them will need to wake up at once.
+	//
+	// maybe use a different NATS subscription API?
 	scaledCh := make(chan *nats.Msg, 64)
 	if _, err := nc.ChanSubscribe("scaled", scaledCh); err != nil {
 		log.Fatalf("Couldn't subscribe to 'scaled' channel")
@@ -50,7 +56,10 @@ func main() {
 		}
 	}()
 
+	// TODO: listen for scale-down events from the controller
+
 	e := echo.New()
+	e.GET("/pong", newPongHandler())
 	e.Any("/*", newHomeHandler(
 		func() { nc.Publish("reqCounter", nil) },
 		scaledCh,
@@ -62,6 +71,17 @@ func main() {
 
 	// admin.POST("")
 	e.Start(":8080")
+}
+
+func newPongHandler() echo.HandlerFunc {
+	return echo.HandlerFunc(func(c echo.Context) error {
+		reqBytes, err := httputil.DumpRequest(c.Request(), true)
+		if err != nil {
+			return err
+		}
+		log.Printf("/pong incoming request: %v", string(reqBytes))
+		return c.String(http.StatusOK, string(reqBytes))
+	})
 }
 
 func newHomeHandler(incrementReq func(), scaledCh <-chan *nats.Msg, db *bolt.DB) echo.HandlerFunc {
