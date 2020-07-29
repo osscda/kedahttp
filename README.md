@@ -31,9 +31,17 @@ _Why don't you use Horizontal Pod Autoscaling, ingress controllers, or service m
 
 Because those systems don't work for independently running processes that need to forward to ACI containers. They are generally for Kubernetes or other container orchestrators only.
 
+(can we use KEDA for this? need to add HTTP scale support)
+(if we used KNative, who would operationalize & run?)
+
 ## TODOs
 
-- [ ] Add a sidecar with a NATS server 
+- [ ] Add admin "control plane" API to this, and a CLI for it
+    - `csclr deploy hello-world:latest --platform=VMSS or --platform=ACI ...`
+    - Also provide a standards-compliant YAML deployment (i.e. KEDA YAML or KNative `Service` YAML)
+- [ ] Add a sidecar with a NATS server
+- [ ] Express container network policy API - translate it to underlying service mesh API
+    - Use LinkerD for service mesh?
 - [ ] Figure out the Front Door ingress situation
 - [ ] Once ^^ is done, modify the scaling controller to know (a) what ideal region to create new containers and (b) the "backup" regions (i.e. priority list) to spin containers up in
 - [ ] Make the proxy / controller multi-tenant
