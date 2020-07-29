@@ -3,7 +3,7 @@ name: 4-action-acr-aci
 on:
   push:
     branches:
-    - master
+    - main
     paths:
     - azure/*
     - '*'
