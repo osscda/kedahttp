@@ -23,6 +23,8 @@ The proxy and controller both depend on NATS, so that's the first thing to run. 
 docker run -p 4222:4222 -ti nats:latest
 ```
 
+Or, if you don't want to use Docker, you can install NATS as a binary. Follow the directions in the [installation page](https://docs.nats.io/nats-server/installation) for how to do it. Note that the Mac Homebrew installation instructions work for Linux and Linuxbrew. If you use Linuxbrew, you'll see a warning that it's a Mac-specific installer. That's fine and won't affect you. Simply run `nats-server` on the command line to get running.
+
 ## FAQ
 
 _Why don't you use Horizontal Pod Autoscaling, ingress controllers, or service meshes to do these things?_
