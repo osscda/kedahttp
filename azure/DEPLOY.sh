@@ -2,11 +2,11 @@
 set -euo pipefail
 
 # variables
-RESOURCE_GROUP='200200-actions'
+RESOURCE_GROUP='07-2020-containerscaler'
 LOCATION='eastus'
-RANDOM_STR='09c205'
+RANDOM_STR='09cscale'
 # [[ -z "$RANDOM_STR" ]] && RANDOM_STR=$(openssl rand -hex 3)
-REPOSITORY_NAME="hello-golang"
+REPOSITORY_NAME="containerscaler"
 
 # create container registry
 REGISTRY_NAME="acr${RANDOM_STR}"
