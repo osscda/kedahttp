@@ -12,6 +12,7 @@ REPOSITORY_NAME="containerscaler"
 REGISTRY_NAME="acr${RANDOM_STR}"
 az acr create -g $RESOURCE_GROUP -l $LOCATION --name $REGISTRY_NAME --sku Basic --admin-enabled true
 # build image
+[[ -z "${GITHUB_SHA:-}" ]] && GITHUB_SHA=$(git rev-parse --short HEAD)
 CONTAINER_IMAGE=$REPOSITORY_NAME:$(date +%y%m%d)-${GITHUB_SHA}
 az acr build -r $REGISTRY_NAME -t $CONTAINER_IMAGE --file Dockerfile .
 # create container instance

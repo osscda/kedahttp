@@ -5,11 +5,13 @@ ARG ALPINE_VERSION=3.11.5
 
 FROM golang:${GOLANG_VERSION}-alpine AS builder
 
+WORKDIR $GOPATH/src/github.com/arschles/containerscaler
+
 COPY . .
 
 ARG VERSION="unset"
 
-RUN go build -o /bin/containerscalerproxy .
+RUN GO111MODULE=on CGO_ENABLED=0 GOPROXY="https://proxy.golang.org" go build -o /bin/containerscalerproxy .
 
 FROM alpine:${ALPINE_VERSION}
 
