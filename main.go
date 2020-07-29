@@ -51,7 +51,11 @@ func main() {
 	}()
 
 	e := echo.New()
-	e.Any("/*", newHomeHandler(scaledCh, db))
+	e.Any("/*", newHomeHandler(
+		func() { nc.Publish("reqCounter", nil) },
+		scaledCh,
+		db,
+	))
 	// e := echo.New()
 
 	// admin := e.Group("/admin")
@@ -60,7 +64,7 @@ func main() {
 	e.Start(":8080")
 }
 
-func newHomeHandler(scaledCh <-chan *nats.Msg, db *bolt.DB) echo.HandlerFunc {
+func newHomeHandler(incrementReq func(), scaledCh <-chan *nats.Msg, db *bolt.DB) echo.HandlerFunc {
 	return echo.HandlerFunc(func(c echo.Context) error {
 		httpReq := c.Request()
 		// check once to see if there's a container available
@@ -79,6 +83,7 @@ func newHomeHandler(scaledCh <-chan *nats.Msg, db *bolt.DB) echo.HandlerFunc {
 		}
 		// forward the request
 		http.DefaultClient.Do(httpReq)
+		incrementReq()
 		return nil
 	})
 }
