@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net/http"
 	"net/http/httputil"
+	"os"
 	"time"
 
 	bolt "github.com/boltdb/bolt"
@@ -69,8 +70,14 @@ func main() {
 
 	// admin := e.Group("/admin")
 
+	port := "8080"
+	portEnv := os.Getenv("LISTEN_PORT")
+	if portEnv != "" {
+		port = portEnv
+	}
+	log.Printf("Listening on port %s", port)
 	// admin.POST("")
-	e.Start(":8080")
+	e.Start(fmt.Sprintf(":%s", port))
 }
 
 func newPongHandler() echo.HandlerFunc {

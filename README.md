@@ -33,6 +33,7 @@ Because those systems don't work for independently running processes that need t
 
 ## TODOs
 
+- [ ] Add a sidecar with a NATS server 
 - [ ] Figure out the Front Door ingress situation
 - [ ] Once ^^ is done, modify the scaling controller to know (a) what ideal region to create new containers and (b) the "backup" regions (i.e. priority list) to spin containers up in
 - [ ] Make the proxy / controller multi-tenant
