@@ -15,3 +15,6 @@
 # vendor/
 cscaler.db
 containerscaler
+controller
+proxy
+cli
