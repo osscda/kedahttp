@@ -39,7 +39,7 @@ func main() {
 		log.Fatalf("Couldn't subscribe to 'scaled' channel")
 	}
 
-	go listener(nc)
+	go listener(nc, db)
 
 	// TODO: listen for scale-down events from the controller
 
