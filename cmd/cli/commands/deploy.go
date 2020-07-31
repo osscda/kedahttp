@@ -17,6 +17,7 @@ var deployCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		fmt.Printf("deployed image: %s\n", args[0])
 		return nil
 	},
 }
