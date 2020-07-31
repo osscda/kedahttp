@@ -10,7 +10,7 @@ controller:
 
 .PHONY: cli
 cli:
-	go build -o ${BIN_DIR}/cli ./cmd/cli
+	go build -v -o ${BIN_DIR}/cscaler ./cmd/cli
 
 .PHONY: clean-cli
 clean-cli: 
