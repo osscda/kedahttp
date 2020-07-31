@@ -1,3 +1,5 @@
+BIN_DIR := ./bin
+
 .PHONY: proxy
 proxy:
 	go build -o proxy ./cmd/proxy
