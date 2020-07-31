@@ -10,4 +10,14 @@ controller:
 
 .PHONY: cli
 cli:
-	go build -o cli ./cmd/cli
+	go build -o ${BIN_DIR}/cli ./cmd/cli
+
+.PHONY: clean-cli
+clean-cli: 
+	rm -rf ${BIN_DIR}/cli
+
+.PHONY: clean-bin
+clean-bin: clean-cli
+
+.PHONY: clean
+clean: clean-bin
