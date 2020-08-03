@@ -59,3 +59,11 @@ Because those systems don't work for independently running processes that need t
     - Lean on Front Door for the routing? Just need to clean up the versioned endpoints. See [this ARM template from AaronW](https://github.com/aaronmsft/aaronmsft-com/blob/master/azure-front-door-container-instances-arm/azuredeploy.json) for example on how to do this
 - [ ] Preview your code in a PR using a GitHub action
     - Have it roll out a new version
+
+## Build
+
+### cli
+
+Just simply run ```make cli``` command
+
+You can then install it into your ```PATH``` or add the ```./bin``` to your ```PATH```
