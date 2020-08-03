@@ -23,34 +23,30 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error connecting to NATS (%s)", err)
 	}
-
 	db, err := bolt.Open("cscaler.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		log.Fatalf("Error connecting to boltdb (%s)", err)
 	}
 
-	// TODO: I don't think that NATS will broadcast to this channel.
-	// multiple goroutines are gonna be waiting on this channel.
-	// all of them will need to wake up at once.
-	//
-	// maybe use a different NATS subscription API?
-	scaledCh := make(chan *nats.Msg, 64)
-	if _, err := nc.ChanSubscribe("scaled", scaledCh); err != nil {
-		log.Fatalf("Couldn't subscribe to 'scaled' channel")
-	}
-
-	go listener(nc, db)
-
-	// TODO: listen for scale-down events from the controller
+	scaledUp := newChanMgr()
+	scaledDown := newChanMgr()
+	// process that listens for incoming scale events from the controller
+	// and sends them to the right channel
+	go startDispatcher(nc, scaledUp.writer(), scaledDown.writer())
+	// process that processes incoming scale events and records the updates
+	// to the internal DB
+	go listener(nc, scaledUp, scaledDown, db)
 
 	e := echo.New()
 	e.GET("/pong", pongHandler)
 	e.Any("/*", newForwardingHandler(
-		func() { nc.Publish("reqCounter", nil) },
-		scaledCh,
+		func() {
+			nc.Publish("reqcounter", nil)
+			log.Printf("published reqcounter")
+		},
+		scaledUp.newReader(),
 		db,
 	))
-	// e := echo.New()
 
 	// admin := e.Group("/admin")
 
