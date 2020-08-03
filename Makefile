@@ -1,3 +1,5 @@
+BIN_DIR := ./bin
+
 .PHONY: proxy
 proxy:
 	go build -o proxy ./cmd/proxy
@@ -17,4 +19,14 @@ runcontroller:
 
 .PHONY: cli
 cli:
-	go build -o cli ./cmd/cli
+	go build -v -o ${BIN_DIR}/cscaler ./cmd/cli
+
+.PHONY: clean-cli
+clean-cli: 
+	rm -rf ${BIN_DIR}/cscaler
+
+.PHONY: clean-bin
+clean-bin: clean-cli
+
+.PHONY: clean
+clean: clean-bin
