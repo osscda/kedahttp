@@ -10,7 +10,6 @@ import (
 	"time"
 
 	bolt "github.com/boltdb/bolt"
-	"github.com/labstack/echo"
 	nats "github.com/nats-io/nats.go"
 )
 
@@ -28,23 +27,26 @@ func main() {
 		log.Fatalf("Error connecting to boltdb (%s)", err)
 	}
 
-	scaledUp := newChanMgr()
-	scaledDown := newChanMgr()
 	// process that listens for incoming scale events from the controller
 	// and sends them to the right channel
-	go startDispatcher(nc, scaledUp.writer(), scaledDown.writer())
+	dispatcher := startDispatcher(nc)
 	// process that processes incoming scale events and records the updates
 	// to the internal DB
-	go listener(nc, scaledUp, scaledDown, db)
+	go listener(
+		nc,
+		dispatcher.newScaleUpReader(),
+		dispatcher.newScaleDownReader(),
+		db,
+	)
 
-	e := echo.New()
-	e.GET("/pong", pongHandler)
-	e.Any("/*", newForwardingHandler(
+	mux := http.NewServeMux()
+	mux.HandleFunc("/pong", pongHandler)
+	mux.HandleFunc("/", newForwardingHandler(
 		func() {
 			nc.Publish("reqcounter", nil)
 			log.Printf("published reqcounter")
 		},
-		scaledUp.newReader(),
+		dispatcher.newScaleUpReader(),
 		db,
 	))
 
@@ -56,15 +58,17 @@ func main() {
 		port = portEnv
 	}
 	log.Printf("Listening on port %s", port)
+	portStr := fmt.Sprintf(":%s", port)
 	// admin.POST("")
-	e.Start(fmt.Sprintf(":%s", port))
+	http.ListenAndServe(portStr, mux)
 }
 
-func pongHandler(c echo.Context) error {
-	reqBytes, err := httputil.DumpRequest(c.Request(), true)
+func pongHandler(w http.ResponseWriter, r *http.Request) {
+	reqBytes, err := httputil.DumpRequest(r, true)
 	if err != nil {
-		return err
+		w.WriteHeader(500)
+		return
 	}
 	log.Printf("/pong incoming request: %v", string(reqBytes))
-	return c.String(http.StatusOK, string(reqBytes))
+	w.Write(reqBytes)
 }

@@ -5,9 +5,10 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 
 	bolt "github.com/boltdb/bolt"
-	"github.com/labstack/echo"
 	nats "github.com/nats-io/nats.go"
 )
 
@@ -15,17 +16,16 @@ func newForwardingHandler(
 	incrementReq func(),
 	scaledUpCh <-chan *nats.Msg,
 	db *bolt.DB,
-) echo.HandlerFunc {
-	return echo.HandlerFunc(func(c echo.Context) error {
+) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		go incrementReq()
-		httpReq := c.Request()
 		// check once to see if there's a container available
-		containerURL := getContainerEndpoint(db)
-		if containerURL == "" {
+		containerURLStr := getContainerEndpoint(db)
+		if containerURLStr == "" {
 			log.Printf(
 				"Waiting for backend container for %s%s",
-				httpReq.URL.Host,
-				httpReq.URL.String(),
+				r.URL.Host,
+				r.URL.String(),
 			)
 			msg := <-scaledUpCh
 			log.Printf("Handler got scaled up event")
@@ -33,12 +33,23 @@ func newForwardingHandler(
 			// just get it right away and let the
 			// watcher goroutine put it in the DB
 			// asynchronously
-			containerURL = string(msg.Data)
+			containerURLStr = string(msg.Data)
 		}
+		log.Printf("using container URL %s", containerURLStr)
 		// forward the request
-		http.DefaultClient.Do(httpReq)
-		return nil
-	})
+		containerURL, err := url.Parse(containerURLStr)
+		if err != nil {
+			log.Printf(
+				"Error parsing container URL string %s (%s)",
+				containerURLStr,
+				err,
+			)
+			return
+		}
+		proxy := httputil.NewSingleHostReverseProxy(containerURL)
+		log.Printf("Proxying request to %s to host %s", r.URL.Path, containerURLStr)
+		proxy.ServeHTTP(w, r)
+	}
 }
 
 func getContainerEndpoint(db *bolt.DB) string {
