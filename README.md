@@ -1,6 +1,10 @@
 # Autoscaling Containers
 
-This project implements a prototype of auto-scaling containers on either Kubernetes or ACI. Although the featureset is very basic, it's similar in concept to [Knative serving](https://knative.dev/docs/serving/). There are some major differences, though:
+This project implements a prototype of auto-scaling containers on ACI. As HTTP requests come into the system, the container(s) that are equipped to handle that request may or may not be running and ready to accept it. If there are sufficient containers available, the request is routed to one of them.  If there are not, a container is started and the request is routed to it when it's ready.
+
+>Although the featureset is comparatively basic, this project is similar in concept to [Knative serving](https://knative.dev/docs/serving/) or [Keda](https://keda.sh). 
+
+There are some major differences, though:
 
 - Simpler to install
     - There are two components: HTTP proxy and a scaling controller. No service mesh required
@@ -9,21 +13,49 @@ This project implements a prototype of auto-scaling containers on either Kuberne
 
 ## Architecture
 
-This system has two components:
+This system has three components:
 
-The **proxy** receives incoming HTTP traffic, looks up where to send that traffic in its database, and forwards it on to a URL. This URL can be any DNS name or IP. On Kubernetes, this URL should be a `Service` DNS name. For forwarding to ACI, this URL should be either a public IP or DNS name of one or more ACI containers. If a request comes in for a container that's not yet available, the proxy will wait for one to become available.
+- Proxy
+- Scaling controller
+- Event bus
 
-The **scaling controller** is responsible for fetching traffic metrics from the proxy and scaling containers up and down based on request volume.
+The **proxy** receives incoming HTTP traffic, looks up where to send that traffic in its database, and forwards it on to a URL. This URL can be any DNS name or IP. If a request comes in and a container is not yet available to service it, the proxy indicates that a container needs to be started (more on this later), waits for the container to be running, and then forwards the request on.
 
-## How to Run This
+The **scaling controller** listens for events from the proxy and scales containers up and down as appropriate.  After the controller scales up or down, it emits an event.
 
-The proxy and controller both depend on NATS, so that's the first thing to run. Do so with Docker and this command:
+The **event bus** is a publish/subscribe system that can take events from a producer and broadcasts them to all the processes that are listening to them. This project currently uses [NATS](https://nats.io) for the event grid.
+
+## How to Run The Scaler
+
+### NATS
+
+The proxy and controller both depend on NATS, so you'll first need to run that. Do so with Docker:
 
 ```shell
 docker run -p 4222:4222 -ti nats:latest
 ```
 
-Or, if you don't want to use Docker, you can install NATS as a binary. Follow the directions in the [installation page](https://docs.nats.io/nats-server/installation) for how to do it. Note that the Mac Homebrew installation instructions work for Linux and Linuxbrew. If you use Linuxbrew, you'll see a warning that it's a Mac-specific installer. That's fine and won't affect you. Simply run `nats-server` on the command line to get running.
+>If you don't want to use Docker, you can install NATS as a binary. Follow the directions in the [installation page](https://docs.nats.io/nats-server/installation) for how to do it. Note that the Mac Homebrew installation instructions work for Linux and Linuxbrew. If you use Linuxbrew, you'll see a warning that it's a Mac-specific installer. That's fine and won't affect you. Simply run `nats-server` on the command line to get running.
+
+### Controller & Proxy
+
+The controller and proxy are independent of each other. They can be started in either order, but both will need to be running for the system to work. Run this command for the proxy:
+
+```shell
+make runproxy
+```
+
+And this for the controller:
+
+```shell
+make runcontroller
+```
+
+>These two commands and the NATS command all need to be run in separate terminal windows
+
+## More Information
+
+See [this document](./docs/REQUEST_LIFECYCLE.md) for details on the lifetime of a request.
 
 ## FAQ
 
