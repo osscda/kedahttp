@@ -14,6 +14,7 @@ func main() {
 		log.Fatalf("Error connecting to NATS (%s)", err)
 	}
 
+	// the reqcounter subjects come in from the proxy
 	nc.Subscribe("reqcounter", func(m *nats.Msg) {
 		log.Printf("reqcounter %v", *m)
 		// send dummy scale up event so that the proxy can

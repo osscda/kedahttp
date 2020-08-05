@@ -33,7 +33,6 @@ func main() {
 	// process that processes incoming scale events and records the updates
 	// to the internal DB
 	go listener(
-		nc,
 		dispatcher.newScaleUpReader(),
 		dispatcher.newScaleDownReader(),
 		db,

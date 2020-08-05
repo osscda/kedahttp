@@ -9,7 +9,7 @@ import (
 )
 
 // listens for scaling events sent from the controller
-func listener(nc *nats.Conn, scaledUp, scaledDown <-chan *nats.Msg, db *bolt.DB) {
+func listener(scaledUp, scaledDown <-chan *nats.Msg, db *bolt.DB) {
 	for {
 		select {
 		case msg := <-scaledUp:
