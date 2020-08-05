@@ -46,7 +46,24 @@ func newForwardingHandler(
 			)
 			return
 		}
+
 		proxy := httputil.NewSingleHostReverseProxy(containerURL)
+		proxy.Director = func(req *http.Request) {
+			req.URL = containerURL
+			req.Host = containerURL.Host
+			// req.URL.Scheme = "https"
+			// req.URL.Path = r.URL.Path
+			// req.URL.Host = containerURL.Host
+			// req.URL.Path = containerURL.Path
+			reqBytes, _ := httputil.DumpRequest(req, false)
+			log.Printf("Proxying request %v", string(reqBytes))
+		}
+		proxy.ModifyResponse = func(res *http.Response) error {
+			respBody, _ := httputil.DumpResponse(res, true)
+			log.Printf("Proxied response: %v", string(respBody))
+			return nil
+		}
+
 		log.Printf("Proxying request to %s to host %s", r.URL.Path, containerURLStr)
 		proxy.ServeHTTP(w, r)
 	}
