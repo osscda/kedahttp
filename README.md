@@ -66,7 +66,7 @@ Because those systems don't work for independently running processes that need t
 (can we use KEDA for this? need to add HTTP scale support)
 (if we used KNative, who would operationalize & run?)
 
-## TODOs
+## TODOs (notes from @asw101 and @arschles discussion)
 
 - [ ] Add admin "control plane" API to this, and a CLI for it
     - `csclr deploy hello-world:latest --platform=VMSS or --platform=ACI ...`
