@@ -16,55 +16,16 @@ There are some major differences, though:
 This system has three components:
 
 - Proxy
-- Scaling controller
-- Event bus
+- [KEDA](https://keda.sh)
+- [NATS streaming](https://docs.nats.io/nats-streaming-concepts/intro)
 
-The **proxy** receives incoming HTTP traffic, looks up where to send that traffic in its database, and forwards it on to a URL. This URL can be any DNS name or IP. If a request comes in and a container is not yet available to service it, the proxy indicates that a container needs to be started (more on this later), waits for the container to be running, and then forwards the request on.
+The **proxy** receives incoming HTTP traffic, emits events to NATS streaming, and forwards to a backend container.
 
-The **scaling controller** listens for events from the proxy and scales containers up and down as appropriate.  After the controller scales up or down, it emits an event.
-
-The **event bus** is a publish/subscribe system that can take events from a producer and broadcasts them to all the processes that are listening to them. This project currently uses [NATS](https://nats.io) for the event grid.
-
-## How to Run The Scaler
-
-### NATS
-
-The proxy and controller both depend on NATS, so you'll first need to run that. Do so with Docker:
-
-```shell
-docker run -p 4222:4222 -ti nats:latest
-```
-
->If you don't want to use Docker, you can install NATS as a binary. Follow the directions in the [installation page](https://docs.nats.io/nats-server/installation) for how to do it. Note that the Mac Homebrew installation instructions work for Linux and Linuxbrew. If you use Linuxbrew, you'll see a warning that it's a Mac-specific installer. That's fine and won't affect you. Simply run `nats-server` on the command line to get running.
-
-### Controller & Proxy
-
-The controller and proxy are independent of each other. They can be started in either order, but both will need to be running for the system to work. Run this command for the proxy:
-
-```shell
-make runproxy
-```
-
-And this for the controller:
-
-```shell
-make runcontroller
-```
-
->These two commands and the NATS command all need to be run in separate terminal windows
+KEDA is responsible for consuming events from the proxy and scaling the backend containers appropriately.
 
 ## More Information
 
-See [this document](./docs/REQUEST_LIFECYCLE.md) for details on the lifetime of a request.
-
-## FAQ
-
-_Why don't you use Horizontal Pod Autoscaling, ingress controllers, or service meshes to do these things?_
-
-Because those systems don't work for independently running processes that need to forward to ACI containers. They are generally for Kubernetes or other container orchestrators only.
-
-(can we use KEDA for this? need to add HTTP scale support)
-(if we used KNative, who would operationalize & run?)
+See [this document](./docs/COMPONENTS.md) for details on the components of this system.
 
 ## TODOs (notes from @asw101 and @arschles discussion)
 
