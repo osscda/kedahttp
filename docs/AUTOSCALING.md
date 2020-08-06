@@ -1,6 +1,13 @@
 # How Autoscaling Works
 
-The controller is responsible for autoscaling. We're using approximately the Knative [autoscaling algorithms](https://knative.dev/docs/serving/autoscaling/). Specifically, we're implementing 
+The controller is responsible for autoscaling. We're using a portion of the Knative [autoscaling algorithms](https://knative.dev/docs/serving/autoscaling/). Specifically, we're using a subset of the configuration parameters available in the [Knative pod autoscaler](https://knative.dev/v0.13-docs/serving/configuring-autoscaling/). Instead of autoscaling pods in Kubernetes, though, we're autoscaling backend containers. Below is a list of _all_ of the Knative autoscaler configuration values complete with a description of how or whether we support it.
+
+>See [the `serving-core` sample configuration](https://github.com/knative/serving/releases/download/v0.14.0/serving-core.yaml) (under the `config-autoscaler` `ConfigMap`) for exhaustive documentation on what each of these configuration values mean.
+
+- `scale-to-zero-grace-period`
+- `enable-scale-to-zero` - set to `true` by default
+- `tick-interval` - the interval between autoscaling calculations
+- `scale-to-zero-grace-period` - time that all the containers are left inactive before scaling to zero
 
 ```
 desiredReplicas = ceil[currentReplicas * ( currentMetricValue / desiredMetricValue )]
