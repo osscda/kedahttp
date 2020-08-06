@@ -1,6 +1,10 @@
 # How Autoscaling Works
 
-The controller is responsible for autoscaling. We're using a portion of the Knative [autoscaling algorithms](https://knative.dev/docs/serving/autoscaling/). Specifically, we're using a subset of the configuration parameters available in the [Knative pod autoscaler](https://knative.dev/v0.13-docs/serving/configuring-autoscaling/). Instead of autoscaling pods in Kubernetes, though, we're autoscaling backend containers. Below is a list of _all_ of the Knative autoscaler configuration values complete with a description of how or whether we support it.
+This repository does not container a "controller" that executes scaling operations. The system relies on [KEDA](https://keda.sh) to do scaling for us.
+
+The proxy . When the proxy receives an incoming request, it publishes a message over NATS streaming and then immediately forwards the request to a `Service` that is sitting in front of the `Deployment` that NATS is scaling.
+
+ is responsible for autoscaling. We're using a portion of the Knative [autoscaling algorithms](https://knative.dev/docs/serving/autoscaling/). Specifically, we're using a subset of the configuration parameters available in the [Knative pod autoscaler](https://knative.dev/v0.13-docs/serving/configuring-autoscaling/). Instead of autoscaling pods in Kubernetes, though, we're autoscaling backend containers. Below is a list of _all_ of the Knative autoscaler configuration values complete with a description of how or whether we support it.
 
 >See [the `serving-core` sample configuration](https://github.com/knative/serving/releases/download/v0.14.0/serving-core.yaml) (under the `config-autoscaler` `ConfigMap`) for exhaustive documentation on what each of these configuration values mean.
 
