@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"math/rand"
@@ -9,7 +10,7 @@ import (
 	"os"
 	"time"
 
-	stan "github.com/nats-io/stan.go"
+	redis "github.com/go-redis/redis/v8"
 )
 
 const (
@@ -22,14 +23,26 @@ func init() {
 }
 
 func main() {
-	sc, err := stan.Connect(
-		clusterID,
-		clientID,
-		stan.NatsURL("localhost:4222"),
-	)
-	if err != nil {
-		log.Fatalf("Error connecting to NATS (%s)", err)
+	ctx := context.Background()
+
+	redisCl := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+
+	pingTimeout, done := context.WithTimeout(ctx, 200*time.Millisecond)
+	pingStatus := redisCl.Ping(pingTimeout)
+	done()
+
+	if pingStatus.Err() != nil {
+		log.Fatalf(
+			"Couldn't connect to redis (%s)",
+			pingStatus.Err(),
+		)
 	}
+
+	log.Print("Connected to Redis")
 
 	// // process that listens for incoming scale events from the controller
 	// // and sends them to the right channel
@@ -46,8 +59,12 @@ func main() {
 	mux.HandleFunc("/pong", pongHandler)
 	mux.HandleFunc("/", newForwardingHandler(
 		func() {
-			sc.Publish("reqcounter", nil)
-			log.Printf("published reqcounter")
+			redisCl.RPush(ctx, "scaler")
+			log.Printf("pushed to redis list")
+		},
+		func() {
+			redisCl.RPop(ctx, "scaler")
+			log.Printf("popped from redis list")
 		},
 	))
 

@@ -10,14 +10,25 @@ import (
 )
 
 func newForwardingHandler(
-	incrementReq func(),
+	startReq func(),
+	endReq func(),
 	// scaledUpCh <-chan *nats.Msg,
 	// db *bolt.DB,
 ) http.HandlerFunc {
-	host := os.Getenv("CSCALER_SERVICE_HOST")
-	port := os.Getenv("CSCALER_SERVICE_PORT")
+	const hostEnvName = "CSCALER_SERVICE_HOST"
+	const portEnvName = "CSCALER_SERVICE_PORT"
+	host := os.Getenv(hostEnvName)
+	port := os.Getenv(portEnvName)
+	if host == "" || port == "" {
+		log.Fatalf(
+			"%s and %s env vars need to be set",
+			hostEnvName,
+			portEnvName,
+		)
+	}
 	return func(w http.ResponseWriter, r *http.Request) {
-		go incrementReq()
+		go startReq()
+		defer endReq()
 
 		hostPortStr := fmt.Sprintf("%s:%s", host, port)
 		log.Printf("using container URL %s", hostPortStr)

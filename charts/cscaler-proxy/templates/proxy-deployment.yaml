@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cscaler-proxy
+  labels:
+    app: cscaler
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "fullname" . }}
+      release: "{{ .Release.Name }}"
+  template:
+    metadata:
+      labels:
+        app: {{ template "fullname" . }}
+        chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+        release: "{{ .Release.Name }}"
+    spec:
+        containers:
+        - 
+            name: {{ template "fullname" . }}
+            image: "arschles/cscaler:latest"
+            imagePullPolicy: Always
+            ports:
+            - containerPort: 8080
+        - 
+            name: redis
+            image: "redis:buster"
+            imagePullPolicy: Always
+            ports:
+            - containerPort: 6379
+     

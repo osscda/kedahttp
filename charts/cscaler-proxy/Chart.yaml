@@ -1,0 +1,5 @@
+name: cscaler
+version: 0.0.1
+appVersion: 0.0.1
+description: CScaler
+engine: gotpl

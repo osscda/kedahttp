@@ -8,7 +8,7 @@ The proxy is primarily responsible for accepting requests from the internet and 
 
 ### Processing a Request
 
-An incoming request to the system will reach the proxy first. When it does, the proxy first publishes an event over [NATS streaming](https://github.com/nats-io/stan.go). After this point, it forwards the request to a [Kubernetes `Service`](https://kubernetes.io/docs/concepts/services-networking/service/) for the backend intended to serve the request. This backend might not currently have any running containers.
+An incoming request to the system will reach the proxy first. When it does, the proxy first publishes an event to [Redis](https://redis.io). After this point, it forwards the request to a [Kubernetes `Service`](https://kubernetes.io/docs/concepts/services-networking/service/) for the backend intended to serve the request. This backend might not currently have any running containers.
 
 KEDA (detailed below) is responsible for scaling (up and down) the pods that the `Service` load balances over.
 
@@ -32,8 +32,5 @@ Deleting a backend reverses the steps in the "create" step. That means it will d
 
 ## [KEDA](https://keda.sh)
 
-Behind the scenes, the events the proxy publishes are consumed by [KEDA](https://keda.sh). KEDA is responsible for responding to these events and scale up / down the number of pods in the `Deployment` mentioned above. The `Service` that the proxy forwards to provides a stable endpoint that load balances over all of the pods, regardless of how many there are.
+Behind the scenes, the prometheus the proxy publishes are consumed by [KEDA](https://keda.sh). KEDA is responsible for responding to these events and scale up / down the number of pods in the `Deployment` mentioned above. The `Service` that the proxy forwards to provides a stable endpoint that load balances over all of the pods, regardless of how many there are.
 
-## [NATS Streaming](https://github.com/nats-io/stan.go)
-
-NATS streaming is the medium over which the proxy and KEDA communicate. The communication is one-way and asynchronous. The proxy simply publishes messages and the KEDA system consumes them.

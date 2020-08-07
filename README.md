@@ -2,22 +2,13 @@
 
 This project implements a prototype of auto-scaling containers on ACI. As HTTP requests come into the system, the container(s) that are equipped to handle that request may or may not be running and ready to accept it. If there are sufficient containers available, the request is routed to one of them.  If there are not, a container is started and the request is routed to it when it's ready.
 
->Although the featureset is comparatively basic, this project is similar in concept to [Knative serving](https://knative.dev/docs/serving/) or [Keda](https://keda.sh). 
-
-There are some major differences, though:
-
-- Simpler to install
-    - There are two components: HTTP proxy and a scaling controller. No service mesh required
-- No routes or versions (yet)
-- Single tenant (at the moment)
-
 ## Architecture
 
 This system has three components:
 
 - Proxy
 - [KEDA](https://keda.sh)
-- [NATS streaming](https://docs.nats.io/nats-streaming-concepts/intro)
+- [Redis](https://redis.io)intro)
 
 The **proxy** receives incoming HTTP traffic, emits events to NATS streaming, and forwards to a backend container.
 
