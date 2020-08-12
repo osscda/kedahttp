@@ -11,26 +11,20 @@ spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
+      app.kubernetes.io/name: cscaler
       app: {{ template "fullname" . }}
       release: "{{ .Release.Name }}"
   template:
     metadata:
       labels:
+        app.kubernetes.io/name: cscaler
         app: {{ template "fullname" . }}
         chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
         release: "{{ .Release.Name }}"
     spec:
         containers:
-        - 
-            name: {{ template "fullname" . }}
-            image: "arschles/cscaler:latest"
-            imagePullPolicy: Always
-            ports:
-            - containerPort: 8080
-        - 
-            name: redis
-            image: "redis:buster"
-            imagePullPolicy: Always
-            ports:
-            - containerPort: 6379
-     
+        - name: {{ template "fullname" . }}
+          image: "arschles/cscaler:latest"
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 8080

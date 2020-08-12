@@ -25,10 +25,16 @@ func init() {
 func main() {
 	ctx := context.Background()
 
+	redisHost := os.Getenv("CSCALER_REDIS_MASTER_SERVICE_HOST")
+	redisPort := os.Getenv("CSCALER_REDIS_MASTER_SERVICE_PORT")
+	if redisHost == "" || redisPort == "" {
+		log.Fatal("CSCALER_REDIS_MASTER_SERVICE_HOST or CSCALER_REDIS_MASTER_SERVICE_PORT not found")
+	}
+	redisAddr := fmt.Sprintf("%s:%s", redisHost, redisPort)
 	redisCl := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
+		Addr:     redisAddr,
+		Password: "YWRtaW4=", // no password set
+		DB:       0,          // use default DB
 	})
 
 	pingTimeout, done := context.WithTimeout(ctx, 200*time.Millisecond)

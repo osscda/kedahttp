@@ -1,1 +1,8 @@
 replicaCount: 1
+
+redis:
+    # redis configs
+    cluster:
+        enabled: false
+        slaveCount: 0
+    password: YWRtaW4=
