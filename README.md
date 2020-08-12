@@ -8,7 +8,7 @@ This system has three components:
 
 - Proxy
 - [KEDA](https://keda.sh)
-- [Redis](https://redis.io)intro)
+- [Redis](https://redis.io)
 
 The **proxy** receives incoming HTTP traffic, emits events to NATS streaming, and forwards to a backend container.
 
