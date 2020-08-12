@@ -8,7 +8,7 @@ This system has three components:
 
 - Proxy
 - [KEDA](https://keda.sh)
-- [Redis](https://redis.io)intro)
+- [Redis](https://redis.io)
 
 The **proxy** receives incoming HTTP traffic, emits events to NATS streaming, and forwards to a backend container.
 
@@ -29,32 +29,6 @@ https://keda.sh/docs/1.5/deploy/#helm
 ## More Information
 
 See [this document](./docs/COMPONENTS.md) for details on the components of this system.
-
-## TODOs (notes from @asw101 and @arschles discussion)
-
-- [ ] Add admin "control plane" API to this, and a CLI for it
-    - `csclr deploy hello-world:latest --platform=VMSS or --platform=ACI ...`
-    - Also provide a standards-compliant YAML deployment (i.e. KEDA YAML or KNative `Service` YAML)
-- [ ] Add a sidecar with a NATS server
-- [ ] Express container network policy API - translate it to underlying service mesh API
-    - Use LinkerD for service mesh?
-- [ ] Figure out the Front Door ingress situation
-- [ ] Once ^^ is done, modify the scaling controller to know (a) what ideal region to create new containers and (b) the "backup" regions (i.e. priority list) to spin containers up in
-- [ ] Make the proxy / controller multi-tenant
-- [ ] Similar to ^^, add some strategies for general scaling. For example:
-    - Primary/secondary: scale first in regionA, then in regionB. i.e. a "backup" scenario
-    - Geographic redundancy: on any scale event, scale up in regionA, regionB and regionC
-    - Geographic load balancing: scale up in the region closest to me, where there is capacity available. have a "backup" list of regions to scale up in, if the preferred region on that scale event is unavailable
-- [ ] Logging mechanism to aggregate all of the requests from the "proxies" (e.g. edge locations) and dump reports into blob store, kusto(?), Azure Arc(?), big data analytics of other kind
-    - Probably in structured JSON
-    - Also implement prometheus API (statsd?)
-    - Also dump scale events
-- [ ] Dump traces from containers in from edge to your container, and from your container to other Azure services / generic URLs to App Insights
-- [ ] Support versions and rollout events for the customer's app. A/B, Green/Blue and canary. Integrate with tracing and logging
-    - Tied to "native" scaling events?
-    - Lean on Front Door for the routing? Just need to clean up the versioned endpoints. See [this ARM template from AaronW](https://github.com/aaronmsft/aaronmsft-com/blob/master/azure-front-door-container-instances-arm/azuredeploy.json) for example on how to do this
-- [ ] Preview your code in a PR using a GitHub action
-    - Have it roll out a new version
 
 ## Build
 
