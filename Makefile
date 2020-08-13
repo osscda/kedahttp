@@ -18,12 +18,16 @@ dockerpush: dockerbuild
 
 .PHONY: helminstall
 helminstall:
-	helm install cscaler ./charts/cscaler-proxy
+	kubectl create ns cscaler
+	helm --namespace cscaler install cscaler ./charts/proxy
 
 .PHONY: helmupgrade
 helmupgrade:
-	helm upgrade cscaler ./charts/cscaler-proxy
+	helm upgrade cscaler ./charts/proxy
 
+.PHONY: helmdelete
+helmdelete:
+	helm delete cscaler
 
 .PHONY: cli
 cli:
