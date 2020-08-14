@@ -16,6 +16,10 @@ dockerbuild:
 dockerpush: dockerbuild
 	docker push arschles/cscaler
 
+.PHONY: dockerbuild
+dockerpush: dockerbuild
+	docker push arschles/cscaler
+
 .PHONY: cli
 cli:
 	go build -v -o ${BIN_DIR}/cscaler ./cmd/cli

@@ -17,4 +17,10 @@ require (
 	golang.org/x/exp v0.0.0-20200513190911-00229845015e // indirect
 	golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5 // indirect
 	google.golang.org/grpc v1.28.0-pre // indirect
+	github.com/go-redis/redis/v8 v8.0.0-beta.7
+	github.com/mitchellh/go-homedir v1.1.0
+	github.com/spf13/cobra v1.0.0
+	github.com/spf13/viper v1.7.0
+	golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5 // indirect
+	google.golang.org/protobuf v1.25.0 // indirect
 )
