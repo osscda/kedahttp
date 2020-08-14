@@ -11,7 +11,7 @@ COPY . .
 
 ARG VERSION="unset"
 
-RUN GO111MODULE=on CGO_ENABLED=0 GOPROXY="https://proxy.golang.org" go build -o /bin/containerscalerproxy .
+RUN GO111MODULE=on CGO_ENABLED=0 GOPROXY="https://proxy.golang.org" go build -o /bin/containerscalerproxy ./cmd/proxy
 
 FROM alpine:${ALPINE_VERSION}
 
