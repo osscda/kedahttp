@@ -8,14 +8,17 @@ proxy:
 runproxy:
 	go run ./cmd/proxy
 
-.PHONY: controller
-controller:
-	go build -o controller ./cmd/controller
+.PHONY: dockerbuild
+dockerbuild:
+	docker build -t arschles/cscaler .
 
-.PHONY: runcontroller
-runcontroller:
-	go run ./cmd/controller
+.PHONY: dockerbuild
+dockerpush: dockerbuild
+	docker push arschles/cscaler
 
+.PHONY: dockerbuild
+dockerpush: dockerbuild
+	docker push arschles/cscaler
 
 .PHONY: cli
 cli:

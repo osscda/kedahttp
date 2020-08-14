@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"math/rand"
@@ -9,8 +10,12 @@ import (
 	"os"
 	"time"
 
-	bolt "github.com/boltdb/bolt"
-	nats "github.com/nats-io/nats.go"
+	redis "github.com/go-redis/redis/v8"
+)
+
+const (
+	clusterID = "test-cluster"
+	clientID  = "cscaler-client"
 )
 
 func init() {
@@ -18,36 +23,52 @@ func init() {
 }
 
 func main() {
-	nc, err := nats.Connect(nats.DefaultURL)
-	if err != nil {
-		log.Fatalf("Error connecting to NATS (%s)", err)
-	}
-	db, err := bolt.Open("cscaler.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
-	if err != nil {
-		log.Fatalf("Error connecting to boltdb (%s)", err)
+	ctx := context.Background()
+
+	redisAddr := os.Getenv("REDIS_ADDR")
+	redisPass := os.Getenv("REDIS_PASS")
+	redisCl := redis.NewClient(&redis.Options{
+		Addr:     redisAddr,
+		Password: redisPass,
+		DB:       0, // use default DB
+	})
+
+	pingTimeout, done := context.WithTimeout(ctx, 200*time.Millisecond)
+	pingStatus := redisCl.Ping(pingTimeout)
+	done()
+
+	if pingStatus.Err() != nil {
+		log.Fatalf(
+			"Couldn't connect to redis (%s)",
+			pingStatus.Err(),
+		)
 	}
 
-	// process that listens for incoming scale events from the controller
-	// and sends them to the right channel
-	dispatcher := startDispatcher(nc)
-	// process that processes incoming scale events and records the updates
-	// to the internal DB
-	go listener(
-		nc,
-		dispatcher.newScaleUpReader(),
-		dispatcher.newScaleDownReader(),
-		db,
-	)
+	log.Print("Connected to Redis")
+
+	// // process that listens for incoming scale events from the controller
+	// // and sends them to the right channel
+	// dispatcher := startDispatcher(sc)
+	// // process that processes incoming scale events and records the updates
+	// // to the internal DB
+	// go listener(
+	// 	dispatcher.newScaleUpReader(),
+	// 	dispatcher.newScaleDownReader(),
+	// 	db,
+	// )
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/pong", pongHandler)
 	mux.HandleFunc("/", newForwardingHandler(
 		func() {
-			nc.Publish("reqcounter", nil)
-			log.Printf("published reqcounter")
+			redisCl.RPush(ctx, "scaler")
+			redisCl.RPush(ctx, "scaler")
+			log.Printf("pushed to redis list")
 		},
-		dispatcher.newScaleUpReader(),
-		db,
+		func() {
+			redisCl.RPop(ctx, "scaler")
+			log.Printf("popped from redis list")
+		},
 	))
 
 	// admin := e.Group("/admin")
