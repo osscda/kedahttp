@@ -26,25 +26,11 @@ helm install keda kedacore/keda --namespace cscaler --create-namespace
 
 >These commands are similar to those on the [official install page](https://keda.sh/docs/1.5/deploy/#helm), but we're installing in a different namespace.
 
-You'll also need to install Redis:
-
-```shell
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo update
-helm install redis bitnami/redis -n cscaler --create-namespace \
-    --set cluster.enabled=false \
-    --set usePassword=true \
-    --set password=abcd \
-    --set cluster.enabled=false
-```
-
 ## Install the Proxy & Dummy App (for now)
 
 
 ```shell
-helm install -n cscaler cscaler ./charts/proxy --create-namespace \
-    --set redisAddr=redis-master.cscaler.svc.cluster.local:6379 \
-    --set redisPass=abcd
+helm install cscaler ./charts/cscaler-proxy -n cscaler --create-namespace
 ```
 
 ## More Information

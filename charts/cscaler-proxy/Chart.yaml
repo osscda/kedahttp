@@ -1,0 +1,12 @@
+name: cscaler
+apiVersion: v2
+type: application
+version: 0.0.1
+appVersion: 0.0.1
+description: CScaler
+engine: gotpl
+maintainers:
+- name: foo
+  email: bar@gmail.com
+metadata:
+  a: b

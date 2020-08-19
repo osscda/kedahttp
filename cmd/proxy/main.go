@@ -1,16 +1,17 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"math/rand"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"os"
 	"time"
 
-	redis "github.com/go-redis/redis/v8"
+	"github.com/arschles/containerscaler/externalscaler"
+	"google.golang.org/grpc"
 )
 
 const (
@@ -23,29 +24,6 @@ func init() {
 }
 
 func main() {
-	ctx := context.Background()
-
-	redisAddr := os.Getenv("REDIS_ADDR")
-	redisPass := os.Getenv("REDIS_PASS")
-	redisCl := redis.NewClient(&redis.Options{
-		Addr:     redisAddr,
-		Password: redisPass,
-		DB:       0, // use default DB
-	})
-
-	pingTimeout, done := context.WithTimeout(ctx, 200*time.Millisecond)
-	pingStatus := redisCl.Ping(pingTimeout)
-	done()
-
-	if pingStatus.Err() != nil {
-		log.Fatalf(
-			"Couldn't connect to redis (%s)",
-			pingStatus.Err(),
-		)
-	}
-
-	log.Print("Connected to Redis")
-
 	// // process that listens for incoming scale events from the controller
 	// // and sends them to the right channel
 	// dispatcher := startDispatcher(sc)
@@ -61,13 +39,10 @@ func main() {
 	mux.HandleFunc("/pong", pongHandler)
 	mux.HandleFunc("/", newForwardingHandler(
 		func() {
-			redisCl.RPush(ctx, "scaler")
-			redisCl.RPush(ctx, "scaler")
-			log.Printf("pushed to redis list")
+			log.Printf("request start")
 		},
 		func() {
-			redisCl.RPop(ctx, "scaler")
-			log.Printf("popped from redis list")
+			log.Printf("request end")
 		},
 	))
 
@@ -78,10 +53,28 @@ func main() {
 	if portEnv != "" {
 		port = portEnv
 	}
-	log.Printf("Listening on port %s", port)
-	portStr := fmt.Sprintf(":%s", port)
-	// admin.POST("")
-	http.ListenAndServe(portStr, mux)
+	go func() {
+
+		log.Printf("HTTP listening on port %s", port)
+		portStr := fmt.Sprintf(":%s", port)
+		// admin.POST("")
+		log.Fatal(http.ListenAndServe(portStr, mux))
+	}()
+	go func() {
+		log.Printf("GRPC listening on port 9090")
+		log.Fatal(startGrpcServer())
+	}()
+	select {}
+}
+
+func startGrpcServer() error {
+	lis, err := net.Listen("tcp", ":9090")
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	grpcServer := grpc.NewServer()
+	externalscaler.RegisterExternalScalerServer(grpcServer, &externalscaler.Impl{})
+	return grpcServer.Serve(lis)
 }
 
 func pongHandler(w http.ResponseWriter, r *http.Request) {
