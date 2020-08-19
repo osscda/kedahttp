@@ -27,7 +27,7 @@ spec:
     - type: external
       metadata:
         # TODO: kubernetes service DNS below
-        scalerAddress: {{ .Values.proxySvcName }}.{{ .Release.Namespace }}:9090
+        scalerAddress: {{ .Values.proxyGRPCSvcName }}.{{ .Release.Namespace }}:9090
         key1: value1
         key2: value2
 

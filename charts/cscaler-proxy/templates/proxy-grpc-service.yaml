@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.proxySvcName }}
+  name: {{ .Values.proxyGRPCSvcName }}
   labels:
     app.kubernetes.io/name: cscaler
     app: cscaler
@@ -9,14 +9,9 @@ metadata:
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   ports:
-    - name: web
-      protocol: TCP
-      port: 80
-      targetPort: 8080
-    # TODO: put this behind a different ClusterIP service
-    - name: grpc-externalscaler
+    - name: grpc
       protocol: TCP
       port: 9090
       targetPort: 9090

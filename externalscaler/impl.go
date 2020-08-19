@@ -14,17 +14,19 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
+var counter int
+
 type Impl struct{}
 
 func (e *Impl) IsActive(ctx context.Context, scaledObject *ScaledObjectRef) (*IsActiveResponse, error) {
-	log.Printf("external.IsActive")
+	log.Printf("external.IsActive: %+v", *scaledObject)
 	return &IsActiveResponse{
 		Result: true,
 	}, nil
 }
 
-func (e *Impl) GetMetricSpec(context.Context, *ScaledObjectRef) (*GetMetricSpecResponse, error) {
-	log.Printf("external.GetMetricSpec")
+func (e *Impl) GetMetricSpec(_ context.Context, sor *ScaledObjectRef) (*GetMetricSpecResponse, error) {
+	log.Printf("external.GetMetricSpec: %+v", *sor)
 	return &GetMetricSpecResponse{
 		MetricSpecs: []*MetricSpec{{
 			MetricName: "earthquakeThreshold",
@@ -34,21 +36,23 @@ func (e *Impl) GetMetricSpec(context.Context, *ScaledObjectRef) (*GetMetricSpecR
 }
 
 func (e *Impl) GetMetrics(_ context.Context, metricRequest *GetMetricsRequest) (*GetMetricsResponse, error) {
-	log.Printf("external.GetMetrics")
+	log.Printf("external.GetMetrics: %+v", *metricRequest)
+	counter++
+	log.Printf("counter: %d", counter)
 	return &GetMetricsResponse{
 		MetricValues: []*MetricValue{{
 			MetricName:  "earthquakeThreshold",
-			MetricValue: int64(rand.Intn(10)),
+			MetricValue: int64(counter),
 		}},
 	}, nil
 }
 
-func (e *Impl) New(context.Context, *NewRequest) (*empty.Empty, error) {
-	log.Printf("external.New")
-	return nil, nil
+func (e *Impl) New(_ context.Context, nr *NewRequest) (*empty.Empty, error) {
+	log.Printf("external.New: %+v", *nr)
+	return &empty.Empty{}, nil
 }
 
-func (e *Impl) Close(_ context.Context, _ *ScaledObjectRef) (*emptypb.Empty, error) {
-	log.Printf("external.Close")
-	return nil, nil
+func (e *Impl) Close(_ context.Context, sor *ScaledObjectRef) (*emptypb.Empty, error) {
+	log.Printf("external.Close: %+v", *sor)
+	return &empty.Empty{}, nil
 }

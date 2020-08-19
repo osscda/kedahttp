@@ -1,3 +1,4 @@
 replicaCount: 1
-proxySvcName: cscaler-proxy
+proxyHTTPSvcName: cscaler-proxy
+proxyGRPCSvcName: cscaler-proxy-internal
 proxyDeployName: cscaler-proxy
