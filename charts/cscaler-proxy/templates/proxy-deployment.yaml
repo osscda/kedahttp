@@ -11,13 +11,13 @@ spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: cscaler
+      name: cscaler-proxy
       app: {{ template "fullname" . }}
       release: "{{ .Release.Name }}"
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: cscaler
+        name: cscaler-proxy
         app: {{ template "fullname" . }}
         chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
         release: "{{ .Release.Name }}"

@@ -68,7 +68,7 @@ func main() {
 }
 
 func startGrpcServer() error {
-	lis, err := net.Listen("tcp", ":9090")
+	lis, err := net.Listen("tcp", "0.0.0.0:9090")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

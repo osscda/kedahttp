@@ -18,6 +18,10 @@ var counter int
 
 type Impl struct{}
 
+func (e *Impl) Ping(context.Context, *empty.Empty) (*empty.Empty, error) {
+	return &empty.Empty{}, nil
+}
+
 func (e *Impl) IsActive(ctx context.Context, scaledObject *ScaledObjectRef) (*IsActiveResponse, error) {
 	log.Printf("external.IsActive: %+v", *scaledObject)
 	return &IsActiveResponse{
@@ -30,14 +34,14 @@ func (e *Impl) GetMetricSpec(_ context.Context, sor *ScaledObjectRef) (*GetMetri
 	return &GetMetricSpecResponse{
 		MetricSpecs: []*MetricSpec{{
 			MetricName: "earthquakeThreshold",
-			TargetSize: 10,
+			TargetSize: 100,
 		}},
 	}, nil
 }
 
 func (e *Impl) GetMetrics(_ context.Context, metricRequest *GetMetricsRequest) (*GetMetricsResponse, error) {
 	log.Printf("external.GetMetrics: %+v", *metricRequest)
-	counter++
+	counter := 2000
 	log.Printf("counter: %d", counter)
 	return &GetMetricsResponse{
 		MetricValues: []*MetricValue{{

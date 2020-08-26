@@ -5,6 +5,7 @@ package externalscaler;
 import "google/protobuf/empty.proto";
 
 service ExternalScaler {
+    rpc Ping(google.protobuf.Empty) returns (google.protobuf.Empty) {}
     rpc New(NewRequest) returns (google.protobuf.Empty) {}
     rpc IsActive(ScaledObjectRef) returns (IsActiveResponse) {}
     rpc GetMetricSpec(ScaledObjectRef) returns (GetMetricSpecResponse) {}

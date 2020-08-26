@@ -23,11 +23,13 @@ metadata:
 spec:
   scaleTargetRef:
     deploymentName: cscaler-dummyapp
+  maxReplicaCount: 1000 # Optional. Default: 100
+  cooldownPeriod: 10
+  pollingInterval: 1
   triggers:
     - type: external
       metadata:
         # TODO: kubernetes service DNS below
         scalerAddress: {{ .Values.proxyGRPCSvcName }}.{{ .Release.Namespace }}:9090
-        key1: value1
-        key2: value2
+        key1: earthquakeThreshold
 

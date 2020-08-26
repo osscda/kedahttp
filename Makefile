@@ -8,15 +8,15 @@ proxy:
 runproxy:
 	go run ./cmd/proxy
 
+.PHONY: proto
+proto:
+	protoc kedascaler.external.proto --go_out=plugins=grpc:externalscaler
+
 .PHONY: dockerbuild
 dockerbuild:
 	docker build -t arschles/cscaler .
 
-.PHONY: dockerbuild
-dockerpush: dockerbuild
-	docker push arschles/cscaler
-
-.PHONY: dockerbuild
+.PHONY: dockerpush
 dockerpush: dockerbuild
 	docker push arschles/cscaler
 

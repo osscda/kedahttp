@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: {{ .Values.proxyGRPCSvcName }}
   labels:
-    app.kubernetes.io/name: cscaler
+    name: {{ .Values.proxyGRPCSvcName }}
     app: cscaler
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"
@@ -16,4 +16,6 @@ spec:
       port: 9090
       targetPort: 9090
   selector:
-    app.kubernetes.io/name: cscaler
+    name: cscaler-proxy
+    app: {{ template "fullname" . }}
+    release: "{{ .Release.Name }}"

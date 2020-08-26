@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: {{ .Values.proxyHTTPSvcName }}
   labels:
-    app.kubernetes.io/name: cscaler
+    name: {{ .Values.proxyHTTPSvcName }}
     app: cscaler
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"
@@ -16,4 +16,6 @@ spec:
       port: 80
       targetPort: 8080
   selector:
-    app.kubernetes.io/name: cscaler
+    name: cscaler-proxy
+    app: {{ template "fullname" . }}
+    release: "{{ .Release.Name }}"

@@ -1,0 +1,22 @@
+# Source: cscaler/templates/proxy-grpc-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: cscaler-proxy-internal
+  labels:
+    name: cscaler-proxy-internal
+    app: cscaler
+    chart: "cscaler-0.0.1"
+    release: "cscaler"
+    heritage: "Helm"
+spec:
+  type: ClusterIP
+  ports:
+    - name: grpc
+      protocol: TCP
+      port: 9090
+      targetPort: 9090
+  selector:
+    name: cscaler-proxy
+    app: cscaler
+    release: "cscaler"

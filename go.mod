@@ -8,6 +8,7 @@ require (
 	github.com/dgryski/go-rendezvous v0.0.0-20200624174652-8d2f3be8b2d9 // indirect
 	github.com/envoyproxy/go-control-plane v0.9.4 // indirect
 	github.com/go-redis/redis/v8 v8.0.0-alpha.2
+	github.com/golang/protobuf v1.4.1
 	github.com/google/go-cmp v0.5.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v1.0.0
@@ -16,11 +17,6 @@ require (
 	go.opentelemetry.io/otel v0.6.0 // indirect
 	golang.org/x/exp v0.0.0-20200513190911-00229845015e // indirect
 	golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5 // indirect
-	google.golang.org/grpc v1.28.0-pre // indirect
-	github.com/go-redis/redis/v8 v8.0.0-beta.7
-	github.com/mitchellh/go-homedir v1.1.0
-	github.com/spf13/cobra v1.0.0
-	github.com/spf13/viper v1.7.0
-	golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5 // indirect
-	google.golang.org/protobuf v1.25.0 // indirect
+	google.golang.org/grpc v1.28.0-pre
+	google.golang.org/protobuf v1.25.0
 )
