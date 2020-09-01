@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cscaler-dummyapp
+  labels:
+    name: cscaler-dummyapp
+    app: cscaler
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  type: ClusterIP
+  ports:
+    - name: web
+      protocol: TCP
+      port: 80
+      targetPort: 8080
+  selector:
+    name: cscaler-dummy
+    app: {{ template "fullname" . }}
+    release: "{{ .Release.Name }}"

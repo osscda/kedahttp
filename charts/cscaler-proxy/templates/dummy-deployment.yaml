@@ -11,20 +11,23 @@ spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: cscaler
+      name: cscaler-dummy
       app: {{ template "fullname" . }}
       release: "{{ .Release.Name }}"
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: cscaler
+        name: cscaler-dummy
         app: {{ template "fullname" . }}
         chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
         release: "{{ .Release.Name }}"
     spec:
         containers:
         - name: {{ template "fullname" . }}
-          image: "arschles/msdev"
+          image: "arschles/gosearch:8ea4741"
           imagePullPolicy: Always
           ports:
           - containerPort: 8080
+          env:
+            - name: BING_SEARCH_KEY
+              value: "{{ .Values.bingSearchKey }}"

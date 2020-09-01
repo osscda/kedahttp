@@ -36,22 +36,31 @@ func main() {
 	// 	db,
 	// )
 
-	reqCounter := int64(0)
+	reqCounter := new(int64)
+	*reqCounter = 0
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/pong", pongHandler)
-	mux.HandleFunc("/", newForwardingHandler(
-		func() {
-			log.Printf("request start")
-			newCounter := atomic.AddInt64(&reqCounter, 1)
-			atomic.StoreInt64(&reqCounter, newCounter)
-		},
-		func() {
-			log.Printf("request end")
-			newCounter := atomic.AddInt64(&reqCounter, -1)
-			atomic.StoreInt64(&reqCounter, newCounter)
-		},
-	))
+	middleware := func(fn http.HandlerFunc) http.HandlerFunc {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			newCounter := atomic.AddInt64(reqCounter, 1)
+			atomic.StoreInt64(reqCounter, newCounter)
+			defer func() {
+				newCounter = newCounter - 1
+				atomic.StoreInt64(reqCounter, newCounter)
+			}()
+			fn(w, r)
+		})
+	}
+	// don't put this inside the middleware so we don't print out an incorrect
+	// counter
+	mux.HandleFunc("/counter", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "%d", atomic.LoadInt64(reqCounter))
+	})
+	// Azure front door health check
+	mux.HandleFunc("/pong", middleware(pongHandler))
+
+	mux.HandleFunc("/azfdhealthz", newHealthCheckHandler())
+	mux.HandleFunc("/", middleware(newForwardingHandler()))
 
 	// admin := e.Group("/admin")
 
@@ -69,12 +78,12 @@ func main() {
 	}()
 	go func() {
 		log.Printf("GRPC listening on port 9090")
-		log.Fatal(startGrpcServer())
+		log.Fatal(startGrpcServer(reqCounter))
 	}()
 	select {}
 }
 
-func startGrpcServer(ctr int64) error {
+func startGrpcServer(ctr *int64) error {
 	lis, err := net.Listen("tcp", "0.0.0.0:9090")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -90,6 +99,5 @@ func pongHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(500)
 		return
 	}
-	log.Printf("/pong incoming request: %v", string(reqBytes))
 	w.Write(reqBytes)
 }

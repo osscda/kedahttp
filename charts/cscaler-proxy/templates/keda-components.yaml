@@ -24,6 +24,7 @@ spec:
   scaleTargetRef:
     deploymentName: cscaler-dummyapp
   maxReplicaCount: 1000 # Optional. Default: 100
+  minReplicaCount: 0
   cooldownPeriod: 10
   pollingInterval: 1
   triggers:

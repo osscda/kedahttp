@@ -9,18 +9,10 @@ import (
 	"os"
 )
 
-func newForwardingHandler(
-	startReq func(),
-	endReq func(),
-	// scaledUpCh <-chan *nats.Msg,
-	// db *bolt.DB,
-) http.HandlerFunc {
+func newForwardingHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		startReq()
-		defer endReq()
-
-		host := os.Getenv("CSCALER_DUMMY_APP_SERVICE_HOST")
-		port := os.Getenv("CSCALER_DUMMY_APP_SERVICE_PORT")
+		host := os.Getenv("CSCALER_DUMMYAPP_SERVICE_HOST")
+		port := os.Getenv("CSCALER_DUMMYAPP_SERVICE_PORT")
 
 		hostPortStr := fmt.Sprintf("http://%s:%s", host, port)
 		log.Printf("using container URL %s", hostPortStr)
@@ -60,4 +52,11 @@ func newForwardingHandler(
 		)
 		proxy.ServeHTTP(w, r)
 	}
+}
+
+func newHealthCheckHandler() http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// handle Azure Front Door health checks
+		w.WriteHeader(http.StatusOK)
+	})
 }

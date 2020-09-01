@@ -30,7 +30,13 @@ helm install keda kedacore/keda --namespace cscaler --create-namespace
 
 
 ```shell
-helm install cscaler ./charts/cscaler-proxy -n cscaler --create-namespace
+helm install cscaler ./charts/cscaler-proxy -n cscaler --create-namespace --set bingSearchKey=${BING_SEARCH_KEY}
+```
+
+To upgrade:
+
+```shell
+helm upgrade cscaler ./charts/cscaler-proxy -n cscaler --set bingSearchKey=${BING_SEARCH_KEY}
 ```
 
 ## More Information
