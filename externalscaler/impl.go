@@ -4,6 +4,7 @@ import (
 	context "context"
 	"log"
 	"math/rand"
+	"sync/atomic"
 	"time"
 
 	empty "github.com/golang/protobuf/ptypes/empty"
@@ -16,7 +17,13 @@ func init() {
 
 var counter int
 
-type Impl struct{}
+type Impl struct {
+	reqCounter int64
+}
+
+func NewImpl(reqCounter int64) *Impl {
+	return &Impl{reqCounter: reqCounter}
+}
 
 func (e *Impl) Ping(context.Context, *empty.Empty) (*empty.Empty, error) {
 	return &empty.Empty{}, nil
@@ -41,12 +48,12 @@ func (e *Impl) GetMetricSpec(_ context.Context, sor *ScaledObjectRef) (*GetMetri
 
 func (e *Impl) GetMetrics(_ context.Context, metricRequest *GetMetricsRequest) (*GetMetricsResponse, error) {
 	log.Printf("external.GetMetrics: %+v", *metricRequest)
-	counter := 2000
+	counter := atomic.LoadInt64(&e.reqCounter)
 	log.Printf("counter: %d", counter)
 	return &GetMetricsResponse{
 		MetricValues: []*MetricValue{{
 			MetricName:  "earthquakeThreshold",
-			MetricValue: int64(counter),
+			MetricValue: counter,
 		}},
 	}, nil
 }

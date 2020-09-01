@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"os"
+	"sync/atomic"
 	"time"
 
 	"github.com/arschles/containerscaler/externalscaler"
@@ -35,14 +36,20 @@ func main() {
 	// 	db,
 	// )
 
+	reqCounter := int64(0)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/pong", pongHandler)
 	mux.HandleFunc("/", newForwardingHandler(
 		func() {
 			log.Printf("request start")
+			newCounter := atomic.AddInt64(&reqCounter, 1)
+			atomic.StoreInt64(&reqCounter, newCounter)
 		},
 		func() {
 			log.Printf("request end")
+			newCounter := atomic.AddInt64(&reqCounter, -1)
+			atomic.StoreInt64(&reqCounter, newCounter)
 		},
 	))
 
@@ -67,13 +74,13 @@ func main() {
 	select {}
 }
 
-func startGrpcServer() error {
+func startGrpcServer(ctr int64) error {
 	lis, err := net.Listen("tcp", "0.0.0.0:9090")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	grpcServer := grpc.NewServer()
-	externalscaler.RegisterExternalScalerServer(grpcServer, &externalscaler.Impl{})
+	externalscaler.RegisterExternalScalerServer(grpcServer, externalscaler.NewImpl(ctr))
 	return grpcServer.Serve(lis)
 }
 
