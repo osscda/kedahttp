@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"os"
-	"sync/atomic"
+	"sync"
 	"time"
 
 	"github.com/arschles/containerscaler/externalscaler"
@@ -25,28 +25,21 @@ func init() {
 }
 
 func main() {
-	// // process that listens for incoming scale events from the controller
-	// // and sends them to the right channel
-	// dispatcher := startDispatcher(sc)
-	// // process that processes incoming scale events and records the updates
-	// // to the internal DB
-	// go listener(
-	// 	dispatcher.newScaleUpReader(),
-	// 	dispatcher.newScaleDownReader(),
-	// 	db,
-	// )
 
-	reqCounter := new(int64)
-	*reqCounter = 0
+	reqCounter := &reqCounter{i: 0, mut: new(sync.RWMutex)}
 
 	mux := http.NewServeMux()
 	middleware := func(fn http.HandlerFunc) http.HandlerFunc {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			newCounter := atomic.AddInt64(reqCounter, 1)
-			atomic.StoreInt64(reqCounter, newCounter)
+			// TODO: need to figure out a way to get the increment
+			// to happen before fn(w, r) happens below. otherwise,
+			// the counter won't get incremented right away and the actual
+			// handler will hang longer than it needs to
+			go func() {
+				reqCounter.inc()
+			}()
 			defer func() {
-				newCounter = newCounter - 1
-				atomic.StoreInt64(reqCounter, newCounter)
+				reqCounter.dec()
 			}()
 			fn(w, r)
 		})
@@ -54,7 +47,7 @@ func main() {
 	// don't put this inside the middleware so we don't print out an incorrect
 	// counter
 	mux.HandleFunc("/counter", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "%d", atomic.LoadInt64(reqCounter))
+		fmt.Fprintf(w, "%d", reqCounter.get())
 	})
 	// Azure front door health check
 	mux.HandleFunc("/pong", middleware(pongHandler))
@@ -83,13 +76,13 @@ func main() {
 	select {}
 }
 
-func startGrpcServer(ctr *int64) error {
+func startGrpcServer(ctr *reqCounter) error {
 	lis, err := net.Listen("tcp", "0.0.0.0:9090")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	grpcServer := grpc.NewServer()
-	externalscaler.RegisterExternalScalerServer(grpcServer, externalscaler.NewImpl(ctr))
+	externalscaler.RegisterExternalScalerServer(grpcServer, newImpl(ctr))
 	return grpcServer.Serve(lis)
 }
 
