@@ -16,5 +16,5 @@
 cscaler.db
 containerscaler
 controller
-proxy
 bin
+/proxy

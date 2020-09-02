@@ -62,7 +62,7 @@ func main() {
 	mux.HandleFunc("/azfdhealthz", newHealthCheckHandler())
 	mux.HandleFunc("/", middleware(newForwardingHandler()))
 
-	// admin := e.Group("/admin")
+	mux.HandleFunc("/admin/deploy", newAdminDeployHandler())
 
 	port := "8080"
 	portEnv := os.Getenv("LISTEN_PORT")
