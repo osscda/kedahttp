@@ -22,6 +22,7 @@ spec:
         chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
         release: "{{ .Release.Name }}"
     spec:
+        serviceAccountName: cscaler-proxy
         containers:
         - name: {{ template "fullname" . }}
           image: "arschles/cscaler:latest"

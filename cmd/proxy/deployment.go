@@ -24,29 +24,27 @@ func str(s string) *string {
 }
 
 func newDeployment(ctx context.Context, namespace, name, image string) (*appsv1.Deployment, error) {
-	// creates the in-cluster config
-	// config, err := rest.InClusterConfig()
-	// if err != nil {
-	// 	panic(err.Error())
-	// }
-	// creates the clientset
-	// clientset, err := kubernetes.NewForConfig(config)
-	// if err != nil {
-	// 	return err
-	// }
+	labels := map[string]string{
+		"name": name,
+		"app":  fmt.Sprintf("cscaler-%s", name),
+	}
 	deployment := &appsv1.Deployment{
+		TypeMeta: metav1.TypeMeta{
+			Kind: "Deployment",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: "cscaler",
+			Labels:    labels,
 		},
 		Spec: appsv1.DeploymentSpec{
+			Selector: &metav1.LabelSelector{
+				MatchLabels: labels,
+			},
 			Replicas: int32P(1),
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{
-						"name": name,
-						"app":  fmt.Sprintf("cscaler-%s", name),
-					},
+					Labels: labels,
 				},
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
