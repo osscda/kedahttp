@@ -6,14 +6,23 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/ericchiang/k8s"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 func newAdminDeployHandler() http.HandlerFunc {
-	client, err := k8s.NewInClusterClient()
+	// creates the in-cluster config
+	config, err := rest.InClusterConfig()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Error getting k8s config (%s)", err)
 	}
+	// creates the clientset
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		log.Fatalf("Error creating k8s clientset (%s)", err)
+	}
+	appsCl := clientset.AppsV1().Deployments("cscaler")
 
 	type reqBody struct {
 		Name           string `json:"name"`
@@ -21,55 +30,25 @@ func newAdminDeployHandler() http.HandlerFunc {
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.Background()
 		req := new(reqBody)
+		defer r.Body.Close()
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 			log.Printf("JSON decode error (%s)", err)
 			w.WriteHeader(400)
 			return
 		}
 
-		deployment := newDeployment(req.Name, req.ContainerImage)
-		// client.V1Deployment{
-		// 	Metadata: &client.V1ObjectMeta{
-		// 		Name:      req.Name,
-		// 		Namespace: "cscaler",
-		// 	},
-		// 	Spec: &client.V1DeploymentSpec{
-		// 		Replicas: 1,
-		// 		Template: &client.V1PodTemplateSpec{
-		// 			Metadata: &client.V1ObjectMeta{
-		// 				Labels: map[string]string{
-		// 					"name": req.Name,
-		// 					"app":  fmt.Sprintf("cscaler-%s", req.Name),
-		// 				},
-		// 			},
-		// 			Spec: &client.V1PodSpec{
-		// 				Containers: []client.V1Container{
-		// 					client.V1Container{
-		// 						Image:           req.ContainerImage,
-		// 						Name:            req.Name,
-		// 						ImagePullPolicy: "Always",
-		// 						Ports: []client.V1ContainerPort{
-		// 							client.V1ContainerPort{
-		// 								ContainerPort: 8080,
-		// 							},
-		// 						},
-		// 						Env: []client.V1EnvVar{
-		// 							client.V1EnvVar{
-		// 								Name:  "PORT",
-		// 								Value: "8080",
-		// 							},
-		// 						},
-		// 					},
-		// 				},
-		// 			},
-		// 		},
-		// 	},
-		// }
-		createErr := client.Create(context.Background(), deployment)
-		if createErr != nil {
-			log.Printf("Error creating deployment (%s)", err)
-			w.WriteHeader(500)
+		deployment, err := newDeployment(ctx, "cscaler", req.Name, req.ContainerImage)
+		if err != nil {
+			log.Printf("Error filling out new deployment (%s)", err)
+			w.WriteHeader(400)
+			return
+		}
+		// TODO: watch the deployment until it reaches ready state
+		if _, err := appsCl.Create(ctx, deployment, metav1.CreateOptions{}); err != nil {
+			log.Printf("Error creating new deployment (%s)", err)
+			w.WriteHeader(400)
 			return
 		}
 		// TODO: create Service, then ScaledObject
