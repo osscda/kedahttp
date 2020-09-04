@@ -8,6 +8,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200624174652-8d2f3be8b2d9 // indirect
 	github.com/envoyproxy/go-control-plane v0.9.4 // indirect
+	github.com/ericchiang/k8s v1.2.0
 	github.com/go-redis/redis/v8 v8.0.0-alpha.2
 	github.com/golang/protobuf v1.4.1
 	github.com/google/go-cmp v0.5.0 // indirect
