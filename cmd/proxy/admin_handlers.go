@@ -50,7 +50,9 @@ func newAdminDeployHandler() http.HandlerFunc {
 		coreCl := clientset.CoreV1().Services("cscaler")
 		service := newService(ctx, "cscaler", req.Name)
 		if _, err := coreCl.Create(ctx, service, metav1.CreateOptions{}); err != nil {
-
+			log.Printf("Error creating new service (%s)", err)
+			w.WriteHeader(400)
+			return
 		}
 		// TODO: create ScaledObject and ClusterIP service
 

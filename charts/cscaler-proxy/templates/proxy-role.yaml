@@ -5,5 +5,5 @@ metadata:
   name: cscaler-proxy
 rules:
 - apiGroups: ["", "apps"] # "" indicates the core API group
-  resources: ["deployments"]
+  resources: ["deployments", "services", "scaledobjects"]
   verbs: ["get", "watch", "list", create]
