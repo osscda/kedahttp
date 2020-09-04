@@ -22,7 +22,6 @@ func newAdminDeployHandler() http.HandlerFunc {
 	if err != nil {
 		log.Fatalf("Error creating k8s clientset (%s)", err)
 	}
-	appsCl := clientset.AppsV1().Deployments("cscaler")
 
 	type reqBody struct {
 		Name           string `json:"name"`
@@ -39,21 +38,21 @@ func newAdminDeployHandler() http.HandlerFunc {
 			return
 		}
 
-		deployment, err := newDeployment(ctx, "cscaler", req.Name, req.ContainerImage)
-		if err != nil {
-			log.Printf("Error filling out new deployment (%s)", err)
-			w.WriteHeader(400)
-			return
-		}
+		appsCl := clientset.AppsV1().Deployments("cscaler")
+		deployment := newDeployment(ctx, "cscaler", req.Name, req.ContainerImage)
 		// TODO: watch the deployment until it reaches ready state
 		if _, err := appsCl.Create(ctx, deployment, metav1.CreateOptions{}); err != nil {
 			log.Printf("Error creating new deployment (%s)", err)
 			w.WriteHeader(400)
 			return
 		}
-		// TODO: create Service, then ScaledObject
-		// use ExternalDNS to set up dynamic DNS's
-		// https://github.com/kubernetes-sigs/external-dns/blob/master/docs/tutorials/cloudflare.md
+
+		coreCl := clientset.CoreV1().Services("cscaler")
+		service := newService(ctx, "cscaler", req.Name)
+		if _, err := coreCl.Create(ctx, service, metav1.CreateOptions{}); err != nil {
+
+		}
+		// TODO: create ScaledObject and ClusterIP service
 
 		w.WriteHeader(200)
 	})

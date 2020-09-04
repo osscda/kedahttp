@@ -7,12 +7,19 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"strings"
 )
 
 func newForwardingHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		host := os.Getenv("CSCALER_DUMMYAPP_SERVICE_HOST")
-		port := os.Getenv("CSCALER_DUMMYAPP_SERVICE_PORT")
+		svcName := r.URL.Query().Get("name")
+		if svcName == "" {
+			log.Printf("No service name given")
+			w.WriteHeader(400)
+			return
+		}
+		host := os.Getenv(fmt.Sprintf("CSCALER_%s_SERVICE_HOST", strings.ToUpper(svcName)))
+		port := os.Getenv(fmt.Sprintf("CSCALER_%s_SERVICE_PORT", strings.ToUpper(svcName)))
 
 		hostPortStr := fmt.Sprintf("http://%s:%s", host, port)
 		log.Printf("using container URL %s", hostPortStr)
