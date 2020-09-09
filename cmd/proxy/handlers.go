@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"os"
-	"strings"
 )
 
 func newForwardingHandler() http.HandlerFunc {
@@ -18,10 +16,7 @@ func newForwardingHandler() http.HandlerFunc {
 			w.WriteHeader(400)
 			return
 		}
-		host := os.Getenv(fmt.Sprintf("CSCALER_%s_SERVICE_HOST", strings.ToUpper(svcName)))
-		port := os.Getenv(fmt.Sprintf("CSCALER_%s_SERVICE_PORT", strings.ToUpper(svcName)))
-
-		hostPortStr := fmt.Sprintf("http://%s:%s", host, port)
+		hostPortStr := fmt.Sprintf("http://%s:8080", svcName)
 		log.Printf("using container URL %s", hostPortStr)
 
 		// forward the request
@@ -40,7 +35,8 @@ func newForwardingHandler() http.HandlerFunc {
 			req.URL = svcURL
 			req.Host = svcURL.Host
 			// req.URL.Scheme = "https"
-			// req.URL.Path = r.URL.Path
+			req.URL.Path = r.URL.Path
+			req.URL.RawQuery = r.URL.RawQuery
 			// req.URL.Host = containerURL.Host
 			// req.URL.Path = containerURL.Path
 			reqBytes, _ := httputil.DumpRequest(req, false)

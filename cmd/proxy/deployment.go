@@ -65,6 +65,14 @@ func newDeployment(ctx context.Context, namespace, name, image string) *appsv1.D
 									Name:  "PORT",
 									Value: "8080",
 								},
+								{
+									Name:  "LISTEN_PORT",
+									Value: "8080",
+								},
+								{
+									Name:  "HTTP_PLATFORM_PORT",
+									Value: "8080",
+								},
 							},
 						},
 					},
