@@ -12,7 +12,10 @@ import (
 	"time"
 
 	"github.com/arschles/containerscaler/externalscaler"
+	"github.com/labstack/echo"
 	"google.golang.org/grpc"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 const (
@@ -28,9 +31,11 @@ func main() {
 
 	reqCounter := &reqCounter{i: 0, mut: new(sync.RWMutex)}
 
+	e := echo.New()
+
 	mux := http.NewServeMux()
-	middleware := func(fn http.HandlerFunc) http.HandlerFunc {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	middleware := func(fn echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) {
 			// TODO: need to figure out a way to get the increment
 			// to happen before fn(w, r) happens below. otherwise,
 			// the counter won't get incremented right away and the actual
@@ -41,21 +46,35 @@ func main() {
 			defer func() {
 				reqCounter.dec()
 			}()
-			fn(w, r)
-		})
+			fn(c)
+		}
 	}
 	// don't put this inside the middleware so we don't print out an incorrect
 	// counter
-	mux.HandleFunc("/counter", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "%d", reqCounter.get())
+	e.GET("/counter", func(c echo.Context) error {
+		fmt.Fprintf(c.Response(), "%d", reqCounter.get())
+		return nil
 	})
+
 	// Azure front door health check
-	mux.HandleFunc("/pong", middleware(pongHandler))
+	e.GET("/pong", pongHandler)
 
-	mux.HandleFunc("/azfdhealthz", newHealthCheckHandler())
-	mux.HandleFunc("/", middleware(newForwardingHandler()))
+	e.GET("/azfdhealthz", newHealthCheckHandler())
+	e.Any("/", newForwardingHandler())
 
-	mux.HandleFunc("/admin/deploy", newAdminDeployHandler())
+	// creates the in-cluster config
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		log.Fatalf("Error getting k8s config (%s)", err)
+	}
+	// creates the clientset
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		log.Fatalf("Error creating k8s clientset (%s)", err)
+	}
+
+	e.POST("/admin/deploy", newAdminCreateDeploymentHandler(clientset))
+	e.DELETE("/admin/deploy", newAdminDeleteDeploymentHandler(clientset))
 
 	port := "8080"
 	portEnv := os.Getenv("LISTEN_PORT")
@@ -86,11 +105,10 @@ func startGrpcServer(ctr *reqCounter) error {
 	return grpcServer.Serve(lis)
 }
 
-func pongHandler(w http.ResponseWriter, r *http.Request) {
-	reqBytes, err := httputil.DumpRequest(r, true)
+func pongHandler(c echo.Context) error {
+	reqBytes, err := httputil.DumpRequest(c.Request(), true)
 	if err != nil {
-		w.WriteHeader(500)
-		return
+		return c.String(500, err.Error())
 	}
-	w.Write(reqBytes)
+	return c.String(200, string(reqBytes))
 }

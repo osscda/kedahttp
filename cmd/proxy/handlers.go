@@ -6,15 +6,16 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+
+	"github.com/labstack/echo"
 )
 
-func newForwardingHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		svcName := r.URL.Query().Get("name")
+func newForwardingHandler() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		svcName := c.Request().URL.Query().Get("name")
 		if svcName == "" {
 			log.Printf("No service name given")
-			w.WriteHeader(400)
-			return
+			return c.String(400, "No service name given")
 		}
 		hostPortStr := fmt.Sprintf("http://%s:8080", svcName)
 		log.Printf("using container URL %s", hostPortStr)
@@ -27,8 +28,10 @@ func newForwardingHandler() http.HandlerFunc {
 				hostPortStr,
 				err,
 			)
-			return
+			return c.String(400, fmt.Sprintf("Error parsing URL string %s (%s)", hostPortStr, err))
 		}
+
+		r := c.Request()
 
 		proxy := httputil.NewSingleHostReverseProxy(svcURL)
 		proxy.Director = func(req *http.Request) {
@@ -53,13 +56,15 @@ func newForwardingHandler() http.HandlerFunc {
 			r.URL.Path,
 			hostPortStr,
 		)
+		w := c.Response()
 		proxy.ServeHTTP(w, r)
+		return nil
 	}
 }
 
-func newHealthCheckHandler() http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func newHealthCheckHandler() echo.HandlerFunc {
+	return func(c echo.Context) error {
 		// handle Azure Front Door health checks
-		w.WriteHeader(http.StatusOK)
-	})
+		return c.String(200, "OK")
+	}
 }

@@ -7,6 +7,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8sappsv1 "k8s.io/client-go/kubernetes/typed/apps/v1"
 )
 
 // import(
@@ -28,6 +29,10 @@ func labels(name string) map[string]string {
 		"name": name,
 		"app":  fmt.Sprintf("cscaler-%s", name),
 	}
+}
+
+func deleteDeployment(ctx context.Context, name string, cl k8sappsv1.DeploymentInterface) error {
+	return cl.Delete(ctx, name, metav1.DeleteOptions{})
 }
 
 func newDeployment(ctx context.Context, namespace, name, image string) *appsv1.Deployment {
