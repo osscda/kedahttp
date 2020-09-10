@@ -23,6 +23,8 @@ var (
 
 // Execute executes the root command.
 func Execute() error {
+	rootCmd.AddCommand(newUndeployCmd())
+	rootCmd.AddCommand(newDeployCmd())
 	return rootCmd.Execute()
 }
 
