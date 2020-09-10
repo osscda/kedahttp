@@ -12,10 +12,9 @@ import (
 	"time"
 
 	"github.com/arschles/containerscaler/externalscaler"
-	"github.com/labstack/echo"
+	"github.com/arschles/containerscaler/pkg/k8s"
+	echo "github.com/labstack/echo/v4"
 	"google.golang.org/grpc"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 )
 
 const (
@@ -34,21 +33,7 @@ func main() {
 	e := echo.New()
 
 	mux := http.NewServeMux()
-	middleware := func(fn echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) {
-			// TODO: need to figure out a way to get the increment
-			// to happen before fn(w, r) happens below. otherwise,
-			// the counter won't get incremented right away and the actual
-			// handler will hang longer than it needs to
-			go func() {
-				reqCounter.inc()
-			}()
-			defer func() {
-				reqCounter.dec()
-			}()
-			fn(c)
-		}
-	}
+	middleware := allMiddlewares(reqCounter)
 	// don't put this inside the middleware so we don't print out an incorrect
 	// counter
 	e.GET("/counter", func(c echo.Context) error {
@@ -57,35 +42,32 @@ func main() {
 	})
 
 	// Azure front door health check
-	e.GET("/pong", pongHandler)
+	e.GET("/pong", pongHandler, middleware)
 
-	e.GET("/azfdhealthz", newHealthCheckHandler())
-	e.Any("/", newForwardingHandler())
+	e.GET("/azfdhealthz", newHealthCheckHandler(), middleware)
+	e.Any("/", newForwardingHandler(), middleware)
 
-	// creates the in-cluster config
-	config, err := rest.InClusterConfig()
+	clientset, err := k8s.NewClientset()
 	if err != nil {
-		log.Fatalf("Error getting k8s config (%s)", err)
-	}
-	// creates the clientset
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		log.Fatalf("Error creating k8s clientset (%s)", err)
+		log.Fatal(err)
 	}
 
-	e.POST("/admin/deploy", newAdminCreateDeploymentHandler(clientset))
-	e.DELETE("/admin/deploy", newAdminDeleteDeploymentHandler(clientset))
+	e.POST("/admin/deploy", newAdminCreateDeploymentHandler(clientset), middleware)
+	e.DELETE("/admin/deploy", newAdminDeleteDeploymentHandler(clientset), middleware)
 
 	port := "8080"
-	portEnv := os.Getenv("LISTEN_PORT")
-	if portEnv != "" {
+	listenPortEnv := os.Getenv("LISTEN_PORT")
+	portEnv := os.Getenv("PORT")
+
+	if listenPortEnv != "" {
+		port = listenPortEnv
+	} else if portEnv != "" {
 		port = portEnv
 	}
-	go func() {
 
+	go func() {
 		log.Printf("HTTP listening on port %s", port)
 		portStr := fmt.Sprintf(":%s", port)
-		// admin.POST("")
 		log.Fatal(http.ListenAndServe(portStr, mux))
 	}()
 	go func() {

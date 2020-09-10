@@ -2,11 +2,12 @@ BIN_DIR := ./bin
 
 .PHONY: proxy
 proxy:
-	go build -o proxy ./cmd/proxy
+	go build -o ${BIN_DIR}/proxy ./cmd/proxy
 
 .PHONY: runproxy
 runproxy:
 	go run ./cmd/proxy
+
 
 .PHONY: proto
 proto:
@@ -22,7 +23,7 @@ dockerpush: dockerbuild
 
 .PHONY: cli
 cli:
-	go build -v -o ${BIN_DIR}/cscaler ./cmd/cli
+	go build -v -o ${BIN_DIR}/cli ./cmd/cli
 
 .PHONY: clean-cli
 clean-cli: 
