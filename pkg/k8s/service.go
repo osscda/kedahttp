@@ -1,4 +1,4 @@
-package main
+package k8s
 
 import (
 	context "context"
@@ -9,11 +9,11 @@ import (
 	k8scorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 )
 
-func deleteService(ctx context.Context, name string, cl k8scorev1.ServiceInterface) error {
+func DeleteService(ctx context.Context, name string, cl k8scorev1.ServiceInterface) error {
 	return cl.Delete(ctx, name, metav1.DeleteOptions{})
 }
 
-func newService(ctx context.Context, namespace, name string) *corev1.Service {
+func NewService(namespace, name string) *corev1.Service {
 	return &corev1.Service{
 		TypeMeta: metav1.TypeMeta{
 			Kind: "Service",

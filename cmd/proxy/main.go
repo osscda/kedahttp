@@ -47,13 +47,13 @@ func main() {
 	e.GET("/azfdhealthz", newHealthCheckHandler(), middleware)
 	e.Any("/", newForwardingHandler(), middleware)
 
-	clientset, err := k8s.NewClientset()
+	clientset, dynCl, err := k8s.NewClientset()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	e.POST("/admin/deploy", newAdminCreateDeploymentHandler(clientset), middleware)
-	e.DELETE("/admin/deploy", newAdminDeleteDeploymentHandler(clientset), middleware)
+	e.POST("/admin/deploy", newAdminCreateDeploymentHandler(clientset, dynCl), middleware)
+	e.DELETE("/admin/deploy", newAdminDeleteDeploymentHandler(clientset, dynCl), middleware)
 
 	port := "8080"
 	listenPortEnv := os.Getenv("LISTEN_PORT")

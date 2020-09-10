@@ -1,8 +1,7 @@
-package main
+package k8s
 
 import (
 	context "context"
-	"fmt"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -10,32 +9,16 @@ import (
 	k8sappsv1 "k8s.io/client-go/kubernetes/typed/apps/v1"
 )
 
-// import(
-// "github.com/ericchiang/k8s"
-// appsv1 "github.com/ericchiang/k8s/apis/apps/v1"
-// corev1 "github.com/ericchiang/k8s/apis/core/v1"
-// )
-
-func int32P(i int32) *int32 {
-	return &i
-}
-
-func str(s string) *string {
-	return &s
-}
-
-func labels(name string) map[string]string {
-	return map[string]string{
-		"name": name,
-		"app":  fmt.Sprintf("cscaler-%s", name),
-	}
-}
-
-func deleteDeployment(ctx context.Context, name string, cl k8sappsv1.DeploymentInterface) error {
+// DeleteDeployment deletes the deployment given using the client given
+func DeleteDeployment(ctx context.Context, name string, cl k8sappsv1.DeploymentInterface) error {
 	return cl.Delete(ctx, name, metav1.DeleteOptions{})
 }
 
-func newDeployment(ctx context.Context, namespace, name, image string) *appsv1.Deployment {
+// NewDeployment creates a new deployment object in the given namespace
+// with the given name and the given image. This does not actually create
+// the deployment in the cluster, it just creates the deployment object
+// in memory
+func NewDeployment(ctx context.Context, namespace, name, image string) *appsv1.Deployment {
 	deployment := &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			Kind: "Deployment",
