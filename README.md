@@ -30,13 +30,13 @@ helm install keda kedacore/keda --namespace cscaler --create-namespace
 
 
 ```shell
-helm install cscaler ./charts/cscaler-proxy -n cscaler --create-namespace --set bingSearchKey=${BING_SEARCH_KEY}
+helm install cscaler ./charts/cscaler-proxy -n cscaler --create-namespace
 ```
 
 To upgrade:
 
 ```shell
-helm upgrade cscaler ./charts/cscaler-proxy -n cscaler --set bingSearchKey=${BING_SEARCH_KEY}
+helm upgrade cscaler ./charts/cscaler-proxy -n cscaler
 ```
 
 ## More Information
@@ -50,3 +50,13 @@ See [this document](./docs/COMPONENTS.md) for details on the components of this 
 Just simply run ```make cli``` command
 
 You can then install it into your ```PATH``` or add the ```./bin``` to your ```PATH```
+
+# Debugging
+
+If you need to do any DNS work from inside a container that's running Alpine linux, use this command:
+
+```shell
+curl -L https://github.com/sequenceiq/docker-alpine-dig/releases/download/v9.10.2/dig.tgz|tar -xzv -C /usr/local/bin/
+```
+
+Courtesy https://github.com/sequenceiq/docker-alpine-dig

@@ -2,20 +2,23 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 
 	"github.com/arschles/containerscaler/pkg/k8s"
 	echo "github.com/labstack/echo/v4"
-	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 )
 
-func newAdminDeleteDeploymentHandler(k8sCl *kubernetes.Clientset) echo.HandlerFunc {
+func newAdminDeleteDeploymentHandler(
+	k8sCl *kubernetes.Clientset,
+	dynCl dynamic.Interface,
+) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
 		deployName := c.QueryParam("name")
+		scaledObjectName := c.QueryParam("name")
+		scaledObjectCl := k8s.NewScaledObjectClient(dynCl)
 		if deployName == "" {
 			return c.String(400, "'name' query param required")
 		}
@@ -25,9 +28,9 @@ func newAdminDeleteDeploymentHandler(k8sCl *kubernetes.Clientset) echo.HandlerFu
 		if err := k8s.DeleteDeployment(ctx, deployName, k8sCl.AppsV1().Deployments("cscaler")); err != nil {
 			return err
 		}
-		// if err := deleteScaledObject(deployName); err != nil {
-		// 	return err
-		// }
+		if err := k8s.DeleteScaledObject(ctx, scaledObjectName, scaledObjectCl); err != nil {
+			return err
+		}
 		return nil
 	}
 }
@@ -49,31 +52,29 @@ func newAdminCreateDeploymentHandler(
 		req := new(reqBody)
 		defer r.Body.Close()
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-			log.Printf("JSON decode error (%s)", err)
-			w.WriteHeader(400)
-			return nil
+			return echo.NewHTTPError(400, "Could not decode request")
 		}
 
 		appsCl := k8sCl.AppsV1().Deployments("cscaler")
 		deployment := k8s.NewDeployment(ctx, "cscaler", req.Name, req.ContainerImage)
 		// TODO: watch the deployment until it reaches ready state
 		if _, err := appsCl.Create(ctx, deployment, metav1.CreateOptions{}); err != nil {
-			return c.Error(errors.Wrap(err, "Creating the new deployment"))
+			return echo.NewHTTPError(500, "Error creating the new deployment (%s)", err)
 		}
 
 		coreCl := k8sCl.CoreV1().Services("cscaler")
 		service := k8s.NewService("cscaler", req.Name)
 		if _, err := coreCl.Create(ctx, service, metav1.CreateOptions{}); err != nil {
-			return c.Error(errors.Wrap(err, "Creating the new service"))
+			return echo.NewHTTPError(500, "Error creating the new service (%s)", err)
 		}
 		scaledObjectCl := k8s.NewScaledObjectClient(dynCl)
 		_, err := scaledObjectCl.Namespace("cscaler").Create(ctx, k8s.NewScaledObject(
 			"cscaler",
 			req.Name,
 			req.Name,
-		))
+		), metav1.CreateOptions{})
 		if err != nil {
-			return c.Error(err, errors.Wrap("Creating the new scaled object"))
+			return echo.NewHTTPError(500, "Creating the new scaled object (%s)", err)
 		}
 
 		w.WriteHeader(200)

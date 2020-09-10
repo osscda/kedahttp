@@ -1,13 +1,16 @@
 package k8s
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	context "context"
+
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 )
 
-func kedaGVR() *schema.GroupVersionResource {
-	return &schema.GroupVersionResource{
+func kedaGVR() schema.GroupVersionResource {
+	return schema.GroupVersionResource{
 		Group:    "keda.k8s.io",
 		Version:  "v1alpha1",
 		Resource: "scaledobjects",
@@ -20,26 +23,31 @@ func NewScaledObjectClient(cl dynamic.Interface) dynamic.NamespaceableResourceIn
 	return cl.Resource(kedaGVR())
 }
 
+// DeleteScaledObject deletes a scaled object with the given name
+func DeleteScaledObject(ctx context.Context, name string, cl dynamic.NamespaceableResourceInterface) error {
+	return cl.Delete(ctx, name, v1.DeleteOptions{})
+}
+
 // NewScaledObject creates a new ScaledObject in memory
-func NewScaledObject(namespace, name, deploymentName string) *ScaledObject {
+func NewScaledObject(namespace, name, deploymentName string) *unstructured.Unstructured {
 	// https://keda.sh/docs/1.5/faq/
 	// https://github.com/kedacore/keda/blob/v2/api/v1alpha1/scaledobject_types.go
-	return &ScaledObject{
-		TypeMeta: metav1.TypeMeta{
-			Kind: "ScaledObject",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels:    labels(name),
-		},
-		Spec: ScaledObjectSpec{
-			MinReplicaCount: int32(0),
-			MaxReplicaCount: int32(1000),
-			PollingInterval: int32(1),
-			ScaleTargetRef: &ScaleTarget{
-				Name: deploymentName,
-				Kind: "deployment",
+	return &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "keda.k8s.io/v1alpha1",
+			"kind":       "ScaledObject",
+			"metadata": map[string]interface{}{
+				"name":      name,
+				"namespace": namespace,
+				"labels":    labels(name),
+			},
+			"spec": map[string]interface{}{
+				"minReplicaCount": 0,
+				"maxReplicaCount": 1000,
+				"pollingInterval": 1,
+				"scaleTargetRef": map[string]string{
+					"deploymentName": deploymentName,
+				},
 			},
 		},
 	}
