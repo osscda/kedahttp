@@ -26,7 +26,7 @@ helm install keda kedacore/keda --namespace cscaler --create-namespace
 
 >These commands are similar to those on the [official install page](https://keda.sh/docs/1.5/deploy/#helm), but we're installing in a different namespace.
 
-## Install the Proxy & Dummy App (for now)
+## Install the Proxy
 
 
 ```shell
