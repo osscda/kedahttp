@@ -1,6 +1,9 @@
 package main
 
-import "github.com/labstack/echo/v4"
+import (
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+)
 
 func allMiddlewares(counter *reqCounter) echo.MiddlewareFunc {
 	countMiddleware := func(fn echo.HandlerFunc) echo.HandlerFunc {
@@ -15,7 +18,8 @@ func allMiddlewares(counter *reqCounter) echo.MiddlewareFunc {
 			defer func() {
 				counter.dec()
 			}()
-			fn(c)
+			logger := middleware.Logger()
+			logger(fn)
 			return nil
 		}
 	}
