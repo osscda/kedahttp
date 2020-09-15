@@ -10,7 +10,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func newAdminDeleteDeploymentHandler(
+func newAdminDeleteAppHandler(
 	k8sCl *kubernetes.Clientset,
 	dynCl dynamic.Interface,
 ) echo.HandlerFunc {
@@ -40,7 +40,7 @@ func newAdminDeleteDeploymentHandler(
 	}
 }
 
-func newAdminCreateDeploymentHandler(
+func newAdminCreateAppHandler(
 	k8sCl *kubernetes.Clientset,
 	dynCl dynamic.Interface,
 	scalerAddress string,

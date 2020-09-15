@@ -1,5 +1,12 @@
 replicaCount: 1
+
 proxyHTTPSvcName: cscaler-proxy
+proxyHTTPSvcPort: 8080
+
+proxyAdminSvcName: cscaler-admin
+proxyAdminSvcPort: 8081
+
 proxyGRPCSvcName: cscaler-proxy-internal
 proxyGRPCSvcPort: 9090
+
 proxyDeployName: cscaler-proxy

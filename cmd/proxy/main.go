@@ -12,6 +12,7 @@ import (
 
 	"github.com/arschles/containerscaler/externalscaler"
 	"github.com/arschles/containerscaler/pkg/k8s"
+	"github.com/arschles/containerscaler/pkg/srv"
 	echo "github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"google.golang.org/grpc"
@@ -51,41 +52,39 @@ func main() {
 	// Azure front door health check
 	e.GET("/pong", pongHandler)
 
+	e.Any("/", newForwardingHandler(), countM)
+
+	adminE := echo.New()
+	adminE.Use(middleware.Logger())
+
 	clientset, dynCl, err := k8s.NewClientset()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	e.POST("/admin/deploy", newAdminCreateDeploymentHandler(clientset, dynCl, scalerAddress))
-	e.DELETE("/admin/deploy", newAdminDeleteDeploymentHandler(clientset, dynCl))
-
-	e.GET("/azfdhealthz", newHealthCheckHandler())
-	e.Any("/", newForwardingHandler(), countM)
-
-	port := "8080"
-	listenPortEnv := os.Getenv("LISTEN_PORT")
-	portEnv := os.Getenv("PORT")
-
-	if listenPortEnv != "" {
-		port = listenPortEnv
-	} else if portEnv != "" {
-		port = portEnv
-	}
+	adminE.POST("/admin/app", newAdminCreateAppHandler(clientset, dynCl, scalerAddress))
+	adminE.DELETE("/admin/app", newAdminDeleteAppHandler(clientset, dynCl))
 
 	go func() {
-		log.Printf("HTTP listening on port %s", port)
-		portStr := fmt.Sprintf(":%s", port)
-		log.Fatal(e.Start(portStr))
+		port := fmt.Sprintf(":%s", srv.EnvOr("ADMIN_PORT", "8081"))
+		log.Printf("admin server listening on port %s", port)
+		log.Fatal(adminE.Start(port))
 	}()
 	go func() {
-		log.Printf("GRPC listening on port 9090")
-		log.Fatal(startGrpcServer(reqCounter))
+		port := fmt.Sprintf(":%s", srv.EnvOr("PROXY_PORT", "8080"))
+		log.Printf("proxy listening on port %s", port)
+		log.Fatal(e.Start(port))
+	}()
+	go func() {
+		port := fmt.Sprintf(":%s", srv.EnvOr("GRPC_PORT", "9090"))
+		log.Printf("GRPC listening on port %s", port)
+		log.Fatal(startGrpcServer(port, reqCounter))
 	}()
 	select {}
 }
 
-func startGrpcServer(ctr *reqCounter) error {
-	lis, err := net.Listen("tcp", "0.0.0.0:9090")
+func startGrpcServer(port string, ctr *reqCounter) error {
+	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0%s", port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

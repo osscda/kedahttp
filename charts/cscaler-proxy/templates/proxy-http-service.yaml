@@ -15,7 +15,7 @@ spec:
     - name: web
       protocol: TCP
       port: 80
-      targetPort: 8080
+      targetPort: {{ .Values.proxyHTTPSvcPort }}
   selector:
     name: cscaler-proxy
     app: {{ template "fullname" . }}

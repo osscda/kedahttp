@@ -28,8 +28,15 @@ spec:
           image: "arschles/cscaler:latest"
           imagePullPolicy: Always
           ports:
-          - containerPort: 8080
-          - containerPort: 9090
+          - containerPort: {{ .Values.proxyHTTPSvcPort }}
+          - containerPort: {{ .Values.proxyAdminSvcPort }}
+          - containerPort: {{ .Values.proxyGRPCSvcPort }}
           env:
           - name: "CSCALER_SCALER_ADDRESS"
             value: {{ .Values.proxyGRPCSvcName }}.{{ .Release.Namespace }}:{{ .Values.proxyGRPCSvcPort}}
+          - name: ADMIN_PORT
+            value: {{ .Values.proxyAdminSvcPort | quote }}
+          - name: PROXY_PORT
+            value: {{ .Values.proxyHTTPSvcPort | quote }}
+          - name: GRPC_PORT
+            value: {{ .Values.proxyGRPCSvcPort | quote }}
