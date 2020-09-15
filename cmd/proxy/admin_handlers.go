@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 
 	"github.com/arschles/containerscaler/pkg/k8s"
 	echo "github.com/labstack/echo/v4"
@@ -25,12 +26,15 @@ func newAdminDeleteDeploymentHandler(
 		if err := k8s.DeleteService(ctx, deployName, k8sCl.CoreV1().Services("cscaler")); err != nil {
 			return err
 		}
+		log.Printf("Deleted service for deployment %s", deployName)
 		if err := k8s.DeleteDeployment(ctx, deployName, k8sCl.AppsV1().Deployments("cscaler")); err != nil {
 			return err
 		}
+		log.Printf("Deleted deployment for deployment %s", deployName)
 		if err := k8s.DeleteScaledObject(ctx, scaledObjectName, scaledObjectCl); err != nil {
 			return err
 		}
+		log.Printf("Deleted ScaledObject for deployment %s", deployName)
 		return nil
 	}
 }

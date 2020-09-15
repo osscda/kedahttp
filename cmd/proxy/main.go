@@ -5,7 +5,6 @@ import (
 	"log"
 	"math/rand"
 	"net"
-	"net/http"
 	"net/http/httputil"
 	"os"
 	"sync"
@@ -14,6 +13,7 @@ import (
 	"github.com/arschles/containerscaler/externalscaler"
 	"github.com/arschles/containerscaler/pkg/k8s"
 	echo "github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"google.golang.org/grpc"
 )
 
@@ -31,9 +31,12 @@ func main() {
 	reqCounter := &reqCounter{i: 0, mut: new(sync.RWMutex)}
 
 	e := echo.New()
+	e.HTTPErrorHandler = customHTTPErrorHandler
 
-	mux := http.NewServeMux()
-	middleware := allMiddlewares(reqCounter)
+	e.Use(middleware.Logger())
+	e.Use(userAgentHandler())
+	countM := countMiddleware(reqCounter)
+
 	// don't put this inside the middleware so we don't print out an incorrect
 	// counter
 	e.GET("/counter", func(c echo.Context) error {
@@ -42,18 +45,18 @@ func main() {
 	})
 
 	// Azure front door health check
-	e.GET("/pong", pongHandler, middleware)
+	e.GET("/pong", pongHandler)
 
-	e.GET("/azfdhealthz", newHealthCheckHandler(), middleware)
-	e.Any("/", newForwardingHandler(), middleware)
+	e.GET("/azfdhealthz", newHealthCheckHandler())
+	e.Any("/", newForwardingHandler(), countM)
 
 	clientset, dynCl, err := k8s.NewClientset()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	e.POST("/admin/deploy", newAdminCreateDeploymentHandler(clientset, dynCl), middleware)
-	e.DELETE("/admin/deploy", newAdminDeleteDeploymentHandler(clientset, dynCl), middleware)
+	e.POST("/admin/deploy", newAdminCreateDeploymentHandler(clientset, dynCl))
+	e.DELETE("/admin/deploy", newAdminDeleteDeploymentHandler(clientset, dynCl))
 
 	port := "8080"
 	listenPortEnv := os.Getenv("LISTEN_PORT")
@@ -68,7 +71,7 @@ func main() {
 	go func() {
 		log.Printf("HTTP listening on port %s", port)
 		portStr := fmt.Sprintf(":%s", port)
-		log.Fatal(http.ListenAndServe(portStr, mux))
+		log.Fatal(e.Start(portStr))
 	}()
 	go func() {
 		log.Printf("GRPC listening on port 9090")

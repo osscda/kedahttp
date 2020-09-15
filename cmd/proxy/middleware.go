@@ -2,10 +2,9 @@ package main
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 )
 
-func allMiddlewares(counter *reqCounter) echo.MiddlewareFunc {
+func countMiddleware(counter *reqCounter) echo.MiddlewareFunc {
 	countMiddleware := func(fn echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			// TODO: need to figure out a way to get the increment
@@ -18,10 +17,18 @@ func allMiddlewares(counter *reqCounter) echo.MiddlewareFunc {
 			defer func() {
 				counter.dec()
 			}()
-			logger := middleware.Logger()
-			logger(fn)
+			fn(c)
 			return nil
 		}
 	}
 	return countMiddleware
+}
+
+func userAgentHandler() echo.MiddlewareFunc {
+	return func(fn echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			c.Request().Header.Set("User-Agent", "cscaler-echo")
+			return fn(c)
+		}
+	}
 }

@@ -10,6 +10,7 @@ import (
 	echo "github.com/labstack/echo/v4"
 )
 
+// TODO: use proxy handler: https://echo.labstack.com/middleware/proxy ??
 func newForwardingHandler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		svcName := c.Request().URL.Query().Get("name")
