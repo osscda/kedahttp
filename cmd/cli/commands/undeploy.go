@@ -22,14 +22,15 @@ func newUndeployCmd() *cobra.Command {
 			}
 			cl := gorequest.New()
 
-			deployURL := fmt.Sprintf("https://%s/admin/deploy", serverURL)
-			_, _, errs := cl.Delete(deployURL).
-				Send(fmt.Sprintf("name=%s", args[0])).
-				End()
+			deployURL := fmt.Sprintf("https://%s/admin/deploy?name=%s", serverURL, args[0])
+			resp, body, errs := cl.Delete(deployURL).Send(nil).End()
 			if len(errs) > 0 {
 				var result error
 				log.Printf("Error undeploying: %v", errs)
 				return multierror.Append(result, errs...)
+			}
+			if resp.StatusCode != 200 {
+				log.Fatalf("Undeploy failed: %s", body)
 			}
 
 			log.Printf("Undeployed!")

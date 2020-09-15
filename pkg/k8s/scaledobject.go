@@ -24,12 +24,12 @@ func NewScaledObjectClient(cl dynamic.Interface) dynamic.NamespaceableResourceIn
 }
 
 // DeleteScaledObject deletes a scaled object with the given name
-func DeleteScaledObject(ctx context.Context, name string, cl dynamic.NamespaceableResourceInterface) error {
+func DeleteScaledObject(ctx context.Context, name string, cl dynamic.ResourceInterface) error {
 	return cl.Delete(ctx, name, v1.DeleteOptions{})
 }
 
 // NewScaledObject creates a new ScaledObject in memory
-func NewScaledObject(namespace, name, deploymentName string) *unstructured.Unstructured {
+func NewScaledObject(namespace, name, deploymentName, scalerAddress string) *unstructured.Unstructured {
 	// https://keda.sh/docs/1.5/faq/
 	// https://github.com/kedacore/keda/blob/v2/api/v1alpha1/scaledobject_types.go
 	return &unstructured.Unstructured{
@@ -48,8 +48,15 @@ func NewScaledObject(namespace, name, deploymentName string) *unstructured.Unstr
 				"scaleTargetRef": map[string]string{
 					"deploymentName": deploymentName,
 				},
+				"triggers": []interface{}{
+					map[string]interface{}{
+						"type": "external",
+						"metadata": map[string]string{
+							"scalerAddress": scalerAddress,
+						},
+					},
+				},
 			},
 		},
 	}
-	return nil
 }

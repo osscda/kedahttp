@@ -23,7 +23,8 @@ func newDeployCmd() *cobra.Command {
 			cl := gorequest.New()
 
 			deployURL := fmt.Sprintf("https://%s/admin/deploy", serverURL)
-			_, _, errs := cl.Post(deployURL).Send(map[string]string{
+			fmt.Printf("deploy to %s", serverURL)
+			resp, body, errs := cl.Post(deployURL).Send(map[string]string{
 				"name":  name,
 				"image": deployImage,
 			}).End()
@@ -31,6 +32,9 @@ func newDeployCmd() *cobra.Command {
 				var result error
 				log.Printf("Error deploying: %v", errs)
 				return multierror.Append(result, errs...)
+			}
+			if resp.StatusCode != 200 {
+				log.Fatalf("Deployment failed: %s", body)
 			}
 
 			log.Printf("Deployed image: %s", args[0])

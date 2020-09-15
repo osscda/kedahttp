@@ -28,10 +28,14 @@ func init() {
 
 func main() {
 
+	scalerAddress := os.Getenv("CSCALER_SCALER_ADDRESS")
+	if scalerAddress == "" {
+		log.Fatalf("Need CSCALER_SCALER_ADDRESS")
+	}
+	log.Printf("Using CSCALER_SCALER_ADDRESS %s", scalerAddress)
 	reqCounter := &reqCounter{i: 0, mut: new(sync.RWMutex)}
 
 	e := echo.New()
-	e.HTTPErrorHandler = customHTTPErrorHandler
 
 	e.Use(middleware.Logger())
 	e.Use(userAgentHandler())
@@ -47,16 +51,16 @@ func main() {
 	// Azure front door health check
 	e.GET("/pong", pongHandler)
 
-	e.GET("/azfdhealthz", newHealthCheckHandler())
-	e.Any("/", newForwardingHandler(), countM)
-
 	clientset, dynCl, err := k8s.NewClientset()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	e.POST("/admin/deploy", newAdminCreateDeploymentHandler(clientset, dynCl))
+	e.POST("/admin/deploy", newAdminCreateDeploymentHandler(clientset, dynCl, scalerAddress))
 	e.DELETE("/admin/deploy", newAdminDeleteDeploymentHandler(clientset, dynCl))
+
+	e.GET("/azfdhealthz", newHealthCheckHandler())
+	e.Any("/", newForwardingHandler(), countM)
 
 	port := "8080"
 	listenPortEnv := os.Getenv("LISTEN_PORT")
