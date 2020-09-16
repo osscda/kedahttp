@@ -26,8 +26,17 @@ helm install keda kedacore/keda --namespace cscaler --create-namespace
 
 >These commands are similar to those on the [official install page](https://keda.sh/docs/1.5/deploy/#helm), but we're installing in a different namespace.
 
-## Install the Proxy
+## Try it out
 
+There's a hosted version of this at `wtfcncf.dev`. You can try it out with the CLI (see below):
+
+```shell
+./bin/cli newapp xkcd -i arschles/xkcd -p 8080
+```
+
+And then go to `xkcd.wtfcncf.dev` to see it deployed!
+
+## Install the Proxy
 
 ```shell
 helm install cscaler ./charts/cscaler-proxy -n cscaler --create-namespace
@@ -51,7 +60,7 @@ Just simply run ```make cli``` command
 
 You can then install it into your ```PATH``` or add the ```./bin``` to your ```PATH```
 
-# Debugging
+## Debugging
 
 If you need to do any DNS work from inside a container that's running Alpine linux, use this command:
 

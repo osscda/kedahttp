@@ -1,3 +1,4 @@
+# this is here so that keda can scale the proxy itself in the future
 apiVersion: keda.k8s.io/v1alpha1
 kind: ScaledObject
 metadata:
@@ -13,5 +14,5 @@ spec:
     - type: external
       metadata:
         scalerAddress: {{ .Values.proxyGRPCSvcName }}.{{ .Release.Namespace }}:{{ .Values.proxyGRPCSvcPort }}
-        key1: earthquakeThreshold
+        key1: proxyCounter
 

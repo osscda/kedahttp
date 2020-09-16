@@ -42,17 +42,7 @@ func main() {
 	e.Use(userAgentHandler())
 	countM := countMiddleware(reqCounter)
 
-	// don't put this inside the middleware so we don't print out an incorrect
-	// counter
-	e.GET("/counter", func(c echo.Context) error {
-		fmt.Fprintf(c.Response(), "%d", reqCounter.get())
-		return nil
-	})
-
-	// Azure front door health check
-	e.GET("/pong", pongHandler)
-
-	e.Any("/", newForwardingHandler(), countM)
+	e.Any("/*", newForwardingHandler(), countM)
 
 	adminE := echo.New()
 	adminE.Use(middleware.Logger())
@@ -62,8 +52,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	adminE.POST("/admin/app", newAdminCreateAppHandler(clientset, dynCl, scalerAddress))
-	adminE.DELETE("/admin/app", newAdminDeleteAppHandler(clientset, dynCl))
+	adminE.POST("/app", newAdminCreateAppHandler(clientset, dynCl, scalerAddress))
+	adminE.DELETE("/app", newAdminDeleteAppHandler(clientset, dynCl))
+	adminE.GET("/pong", pongHandler)
+	adminE.GET("/counter", func(c echo.Context) error {
+		fmt.Fprintf(c.Response(), "%d", reqCounter.get())
+		return nil
+	})
 
 	go func() {
 		port := fmt.Sprintf(":%s", srv.EnvOr("ADMIN_PORT", "8081"))

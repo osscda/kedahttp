@@ -34,19 +34,23 @@ func (e *impl) IsActive(ctx context.Context, scaledObject *externalscaler.Scaled
 
 func (e *impl) GetMetricSpec(_ context.Context, sor *externalscaler.ScaledObjectRef) (*externalscaler.GetMetricSpecResponse, error) {
 	return &externalscaler.GetMetricSpecResponse{
-		MetricSpecs: []*externalscaler.MetricSpec{{
-			MetricName: "earthquakeThreshold",
-			TargetSize: 100,
-		}},
+		MetricSpecs: []*externalscaler.MetricSpec{
+			{
+				MetricName: "earthquakeThreshold",
+				TargetSize: 100,
+			},
+		},
 	}, nil
 }
 
 func (e *impl) GetMetrics(_ context.Context, metricRequest *externalscaler.GetMetricsRequest) (*externalscaler.GetMetricsResponse, error) {
 	return &externalscaler.GetMetricsResponse{
-		MetricValues: []*externalscaler.MetricValue{{
-			MetricName:  "earthquakeThreshold",
-			MetricValue: int64(e.reqCounter.get()),
-		}},
+		MetricValues: []*externalscaler.MetricValue{
+			{
+				MetricName:  "earthquakeThreshold",
+				MetricValue: int64(e.reqCounter.get()),
+			},
+		},
 	}, nil
 }
 

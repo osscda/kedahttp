@@ -12,32 +12,33 @@ import (
 func newDeployCmd() *cobra.Command {
 	var serverURL string
 	var deployImage string
+	var port string
 	var deployCmd = &cobra.Command{
-		Use:   "deploy",
-		Short: "Deploy the image to the environment.",
-		Long:  `Deploy the image to the environment.`,
+		Use:   "newapp",
+		Short: "Create a new app",
+		Long:  `Start serving & scaling the given container.`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			name := args[0]
 
 			cl := gorequest.New()
 
-			deployURL := fmt.Sprintf("https://%s/admin/deploy", serverURL)
-			fmt.Printf("deploy to %s", serverURL)
+			deployURL := fmt.Sprintf("https://%s/app", serverURL)
 			resp, body, errs := cl.Post(deployURL).Send(map[string]string{
 				"name":  name,
 				"image": deployImage,
+				"port":  port,
 			}).End()
 			if len(errs) > 0 {
 				var result error
-				log.Printf("Error deploying: %v", errs)
+				log.Printf("Error creating: %v", errs)
 				return multierror.Append(result, errs...)
 			}
 			if resp.StatusCode != 200 {
-				log.Fatalf("Deployment failed: %s", body)
+				log.Fatalf("Create failed: %s", body)
 			}
 
-			log.Printf("Deployed image: %s", args[0])
+			log.Printf("Created %s (image %s)", name, deployImage)
 			return nil
 		},
 	}
@@ -48,9 +49,17 @@ func newDeployCmd() *cobra.Command {
 		&serverURL,
 		"server-url",
 		"s",
-		"wtfcncf.dev",
-		"The URL to the admin server (without the 'http' prefix",
+		"admin.wtfcncf.dev",
+		"The URL to the admin server (without the 'http' prefix)",
 	)
+	flags.StringVarP(
+		&port,
+		"port",
+		"p",
+		"8080",
+		"The port that the container will be listening on",
+	)
+
 	flags.StringVarP(
 		&deployImage,
 		"image",

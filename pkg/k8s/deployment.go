@@ -18,7 +18,7 @@ func DeleteDeployment(ctx context.Context, name string, cl k8sappsv1.DeploymentI
 // with the given name and the given image. This does not actually create
 // the deployment in the cluster, it just creates the deployment object
 // in memory
-func NewDeployment(ctx context.Context, namespace, name, image string) *appsv1.Deployment {
+func NewDeployment(ctx context.Context, namespace, name, image string, port int32) *appsv1.Deployment {
 	deployment := &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			Kind: "Deployment",
@@ -45,21 +45,13 @@ func NewDeployment(ctx context.Context, namespace, name, image string) *appsv1.D
 							ImagePullPolicy: "Always",
 							Ports: []corev1.ContainerPort{
 								{
-									ContainerPort: 8080,
+									ContainerPort: port,
 								},
 							},
 							Env: []corev1.EnvVar{
 								{
-									Name:  "PORT",
-									Value: "8080",
-								},
-								{
-									Name:  "LISTEN_PORT",
-									Value: "8080",
-								},
-								{
-									Name:  "HTTP_PLATFORM_PORT",
-									Value: "8080",
+									Name:  "ENV",
+									Value: "cscaler",
 								},
 							},
 						},

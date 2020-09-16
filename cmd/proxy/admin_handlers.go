@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"strconv"
 
 	"github.com/arschles/containerscaler/pkg/k8s"
 	echo "github.com/labstack/echo/v4"
@@ -49,6 +50,7 @@ func newAdminCreateAppHandler(
 	type reqBody struct {
 		Name           string `json:"name"`
 		ContainerImage string `json:"image"`
+		Port           string `json:"port"`
 	}
 
 	return func(c echo.Context) error {
@@ -61,8 +63,14 @@ func newAdminCreateAppHandler(
 			return c.String(400, "decoding request")
 		}
 
+		portInt, err := strconv.Atoi(req.Port)
+		if err != nil {
+			c.Logger().Errorf("Invalid port %s (%s)", req.Port, err)
+			return c.String(400, "invalid port")
+		}
+
 		appsCl := k8sCl.AppsV1().Deployments("cscaler")
-		deployment := k8s.NewDeployment(ctx, "cscaler", req.Name, req.ContainerImage)
+		deployment := k8s.NewDeployment(ctx, "cscaler", req.Name, req.ContainerImage, int32(portInt))
 		// TODO: watch the deployment until it reaches ready state
 		if _, err := appsCl.Create(ctx, deployment, metav1.CreateOptions{}); err != nil {
 			c.Logger().Errorf("Creating deployment (%s)", err)
@@ -70,13 +78,13 @@ func newAdminCreateAppHandler(
 		}
 
 		coreCl := k8sCl.CoreV1().Services("cscaler")
-		service := k8s.NewService("cscaler", req.Name)
+		service := k8s.NewService("cscaler", req.Name, int32(portInt))
 		if _, err := coreCl.Create(ctx, service, metav1.CreateOptions{}); err != nil {
 			c.Logger().Errorf("Creating service (%s)", err)
 			return c.String(500, "creating service")
 		}
 		scaledObjectCl := k8s.NewScaledObjectClient(dynCl)
-		_, err := scaledObjectCl.Namespace("cscaler").Create(ctx, k8s.NewScaledObject(
+		_, err = scaledObjectCl.Namespace("cscaler").Create(ctx, k8s.NewScaledObject(
 			"cscaler",
 			req.Name,
 			req.Name,

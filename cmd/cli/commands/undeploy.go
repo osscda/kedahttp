@@ -12,9 +12,9 @@ import (
 func newUndeployCmd() *cobra.Command {
 	var serverURL string
 	var undeployCmd = &cobra.Command{
-		Use:   "undeploy",
-		Short: "Remove a deployment",
-		Long:  `Remove a deployment by its name. This will delete all traces of the images running and immediately stop serving your app.`,
+		Use:   "rmapp",
+		Short: "Remove an app",
+		Long:  `Remove an app completely. This will delete all resources associated with the app, including the running container and scaling configuration`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
@@ -22,18 +22,18 @@ func newUndeployCmd() *cobra.Command {
 			}
 			cl := gorequest.New()
 
-			deployURL := fmt.Sprintf("https://%s/admin/deploy?name=%s", serverURL, args[0])
+			deployURL := fmt.Sprintf("https://%s/app?name=%s", serverURL, args[0])
 			resp, body, errs := cl.Delete(deployURL).Send(nil).End()
 			if len(errs) > 0 {
 				var result error
-				log.Printf("Error undeploying: %v", errs)
+				log.Printf("Error deleting: %v", errs)
 				return multierror.Append(result, errs...)
 			}
 			if resp.StatusCode != 200 {
 				log.Fatalf("Undeploy failed: %s", body)
 			}
 
-			log.Printf("Undeployed!")
+			log.Printf("App %s deleted!", args[0])
 			return nil
 		},
 	}
@@ -41,8 +41,8 @@ func newUndeployCmd() *cobra.Command {
 		&serverURL,
 		"server-url",
 		"s",
-		"wtfcncf.dev",
-		"The URL to the admin server (without the 'http' prefix",
+		"admin.wtfcncf.dev",
+		"The URL to the admin server (without the 'http' prefix)",
 	)
 	return undeployCmd
 

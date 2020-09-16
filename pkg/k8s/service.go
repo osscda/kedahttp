@@ -13,7 +13,7 @@ func DeleteService(ctx context.Context, name string, cl k8scorev1.ServiceInterfa
 	return cl.Delete(ctx, name, metav1.DeleteOptions{})
 }
 
-func NewService(namespace, name string) *corev1.Service {
+func NewService(namespace, name string, port int32) *corev1.Service {
 	return &corev1.Service{
 		TypeMeta: metav1.TypeMeta{
 			Kind: "Service",
@@ -31,7 +31,7 @@ func NewService(namespace, name string) *corev1.Service {
 					Port:     8080,
 					TargetPort: intstr.IntOrString{
 						Type:   intstr.Int,
-						IntVal: 8080,
+						IntVal: port,
 					},
 				},
 			},
