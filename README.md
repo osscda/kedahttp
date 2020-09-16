@@ -31,10 +31,16 @@ helm install keda kedacore/keda --namespace cscaler --create-namespace
 There's a hosted version of this at `wtfcncf.dev`. You can try it out with the CLI (see below):
 
 ```shell
-./bin/cli newapp xkcd -i arschles/xkcd -p 8080
+./capps run xkcd -i arschles/xkcd -p 8080
 ```
 
 And then go to `xkcd.wtfcncf.dev` to see it deployed!
+
+To shut it down, run:
+
+```shell
+./capps rm xkcd
+```
 
 ## Install the Proxy
 

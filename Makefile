@@ -23,7 +23,7 @@ dockerpush: dockerbuild
 
 .PHONY: cli
 cli:
-	go build -v -o ${BIN_DIR}/cli ./cmd/cli
+	go build -v -o ./capps ./cmd/cli
 
 .PHONY: clean-cli
 clean-cli: 

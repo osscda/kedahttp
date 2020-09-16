@@ -12,7 +12,7 @@ import (
 func newUndeployCmd() *cobra.Command {
 	var serverURL string
 	var undeployCmd = &cobra.Command{
-		Use:   "rmapp",
+		Use:   "rm",
 		Short: "Remove an app",
 		Long:  `Remove an app completely. This will delete all resources associated with the app, including the running container and scaling configuration`,
 		Args:  cobra.ExactArgs(1),

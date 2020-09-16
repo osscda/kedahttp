@@ -14,7 +14,7 @@ func newDeployCmd() *cobra.Command {
 	var deployImage string
 	var port string
 	var deployCmd = &cobra.Command{
-		Use:   "newapp",
+		Use:   "run",
 		Short: "Create a new app",
 		Long:  `Start serving & scaling the given container.`,
 		Args:  cobra.ExactArgs(1),
