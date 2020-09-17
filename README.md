@@ -34,7 +34,7 @@ There's a hosted version of this at `wtfcncf.dev`. You can try it out with the C
 ./capps run xkcd -i arschles/xkcd -p 8080
 ```
 
-And then go to `xkcd.wtfcncf.dev` to see it deployed!
+And then go to `xkcd.containerapps.dev` to see it deployed!
 
 To shut it down, run:
 
