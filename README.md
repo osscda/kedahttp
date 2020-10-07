@@ -90,6 +90,8 @@ __Flags__
 
 - `-p`, `--port`: Port number to be exposed, should be the port where the app listens to incoming connections.
 
+- `--use-http`: When set, the server URL will use the `HTTP` protocol instead of `HTTPS` (_default: false_)
+
 ### Remove an App
 
 ```shell
@@ -101,6 +103,8 @@ Removes a previously created app
 - `-s`, `--server-url`: (__Required__) The URL for the admin server. To get this, run `kubectl get svc cscaler-proxy -n cscaler -o=jsonpath="{.status.loadBalancer.ingress[*].ip}"`
     > Without the correct admin url the scaler __will not__ work
 
+- `--use-http`: When set, the server URL will use the `HTTP` protocol instead of `HTTPS` (_default: false_)
+
 ## Access the app
 
 Once deployed with `capps run` you'll be able to access the application through the __[proxy IP](#install-the-proxy)__.
@@ -108,6 +112,8 @@ Once deployed with `capps run` you'll be able to access the application through 
 However, the proxy only understands DNS hostnames, which means that, if your service is called `foo`, you'll have to access it through a DNS name like `foo.domain.com` and this DNS Zone needs to have an `A` record with the name `foo` pointing to the proxy IP. This is an implementation of an automatic ingress rule.
 
 You can either use your own domain or an Azure provided one.
+
+> __Important__: If you could not access the endpoint and it didn't work, probably you didn't have HTTPS enabled, try to use the `--use-http` flag to test again
 
 ### Access through your domain
 

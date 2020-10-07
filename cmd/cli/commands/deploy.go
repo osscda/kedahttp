@@ -13,6 +13,7 @@ func newDeployCmd() *cobra.Command {
 	var serverURL string
 	var deployImage string
 	var port string
+	var acceptsHTTP bool
 	var deployCmd = &cobra.Command{
 		Use:   "run",
 		Short: "Create a new app",
@@ -23,19 +24,28 @@ func newDeployCmd() *cobra.Command {
 
 			cl := gorequest.New()
 
-			deployURL := fmt.Sprintf("https://%s/app", serverURL)
+			serverProtocol := "https"
+			if acceptsHTTP == true {
+				serverProtocol = "http"
+			}
+
+			deployURL := fmt.Sprintf("%s://%s/app", serverProtocol, serverURL)
+			fmt.Println("Using server ", deployURL)
+
 			resp, body, errs := cl.Post(deployURL).Send(map[string]string{
 				"name":  name,
 				"image": deployImage,
 				"port":  port,
 			}).End()
+
 			if len(errs) > 0 {
 				var result error
 				log.Printf("Error creating: %v", errs)
 				return multierror.Append(result, errs...)
 			}
+
 			if resp.StatusCode != 200 {
-				log.Fatalf("Create failed: %s", body)
+				log.Fatalf("Create failed: \"%s\" with status (%d)", body, resp.StatusCode)
 			}
 
 			log.Printf("Created %s (image %s)", name, deployImage)
@@ -52,6 +62,14 @@ func newDeployCmd() *cobra.Command {
 		"admin.wtfcncf.dev",
 		"The URL to the admin server (without the 'http' prefix)",
 	)
+
+	flags.BoolVar(
+		&acceptsHTTP,
+		"use-http",
+		false,
+		"If set, the server will be called using HTTP instead of HTTPS",
+	)
+
 	flags.StringVarP(
 		&port,
 		"port",

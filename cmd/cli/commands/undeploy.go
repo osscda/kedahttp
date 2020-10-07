@@ -11,6 +11,7 @@ import (
 
 func newUndeployCmd() *cobra.Command {
 	var serverURL string
+	var acceptsHTTP bool
 	var undeployCmd = &cobra.Command{
 		Use:   "rm",
 		Short: "Remove an app",
@@ -22,7 +23,14 @@ func newUndeployCmd() *cobra.Command {
 			}
 			cl := gorequest.New()
 
-			deployURL := fmt.Sprintf("https://%s/app?name=%s", serverURL, args[0])
+			serverProtocol := "https"
+			if acceptsHTTP == true {
+				serverProtocol = "http"
+			}
+
+			deployURL := fmt.Sprintf("%s://%s/app", serverProtocol, serverURL)
+			fmt.Println("Using server ", deployURL)
+
 			resp, body, errs := cl.Delete(deployURL).Send(nil).End()
 			if len(errs) > 0 {
 				var result error
@@ -44,6 +52,14 @@ func newUndeployCmd() *cobra.Command {
 		"admin.wtfcncf.dev",
 		"The URL to the admin server (without the 'http' prefix)",
 	)
+
+	undeployCmd.Flags().BoolVar(
+		&acceptsHTTP,
+		"use-http",
+		false,
+		"If set, the server will be called using HTTP instead of HTTPS",
+	)
+
 	return undeployCmd
 
 }
