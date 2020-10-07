@@ -1,0 +1,16 @@
+version: "3.7"
+services:
+  nats-server:
+    image: 'nats:2.1.7-scratch'
+    expose:
+      - "4222"
+    hostname: nats-server
+  containerscaler:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    depends_on:
+      - nats-server
+    volumes:
+      - .:/workspace:cached
+    command: /bin/sh -c "while sleep 1000; do :; done"  

@@ -138,6 +138,8 @@ You can check the logs on `kubectl logs deploy/cscaler-proxy -f -n cscaler` to c
 
 ## Debugging
 
+If you are using [vscode ](https://code.visualstudio.com/) you can open up the dev environment in container using the [remote container extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) the nats server will be avalible in the dev container via `nats-server:4222`
+
 If you need to do any DNS work from inside a container that's running Alpine linux, use this command:
 
 ```shell
