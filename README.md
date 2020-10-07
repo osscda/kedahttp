@@ -48,7 +48,7 @@ helm upgrade cscaler ./charts/cscaler-proxy -n cscaler
 After the install, run the following command to fetch the public IP of the proxy service:
 
 ```shell
-k get svc cscaler-proxy -n cscaler -o=jsonpath='{.status.loadBalancer.ingress[*].ip}'
+kubectl get svc cscaler-proxy -n cscaler -o=jsonpath='{.status.loadBalancer.ingress[*].ip}'
 ```
 
 ### Build the app
