@@ -23,10 +23,10 @@ dockerpush: dockerbuild
 
 .PHONY: cli
 cli:
-	go build -v -o ./capps ./cmd/cli
+	go build -v -o ./bin/capps ./cmd/cli
 
 .PHONY: clean-cli
-clean-cli: 
+clean-cli:
 	rm -rf ${BIN_DIR}/cscaler
 
 .PHONY: clean-bin
