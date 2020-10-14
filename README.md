@@ -17,6 +17,10 @@ KEDA is responsible for consuming events from the proxy and scaling the backend 
 
 ## Installation
 
+Run `curl -L https://raw.githubusercontent.com/arschles/containerscaler/main/scripts/install.sh?token=AAYNMMCKX2PJV4T74AKS7XS7SB4RQ | bash`
+
+## Manual Installation
+
 To install the application you'll need a __Kubernetes Cluster__ up and running.
 
 ### Install KEDA
