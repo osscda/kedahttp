@@ -1,11 +1,37 @@
 #!/bin/bash
+#!/bin/bash
+
+function shoutln {
+  echo
+  printf '%s\n' "$1" | awk '{ print toupper($0) }'
+  echo
+}
+
+function shout {
+  printf '%s' "$1" | awk '{ print toupper($0) }'
+}
+
+function log {
+  echo -n "-> $1"
+}
+
+function logln () {
+  echo "-> $1"
+}
+
+commandExists () {
+    type "$1" &> /dev/null ;
+}
+
+function pause () {
+  read -s -n 1 -p "$*"
+}
+
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 REPOSITORY_LOCATION=/tmp/containerscaler
 rm -rf $REPOSITORY_LOCATION
 
-source $SCRIPT_DIR/_helpers/functions.sh
-
-cat $SCRIPT_DIR/_helpers/logo.txt
+curl -sL https://raw.githubusercontent.com/arschles/containerscaler/main/scripts/_helpers/logo.txt?token=AAYNMMFUJFX4XC2ZT3FTXDC7SB344 | cat
 echo
 
 shoutln "=== container scaler init script ==="
