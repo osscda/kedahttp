@@ -15,7 +15,7 @@ var (
 	userLicense string
 
 	rootCmd = &cobra.Command{
-		Use:   "cscaler",
+		Use:   "capps",
 		Short: "Auto-scaling containers",
 		Long:  `This project implements a prototype of auto-scaling containers on either Kubernetes or ACI`,
 	}
