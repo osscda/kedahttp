@@ -10,3 +10,4 @@ proxyGRPCSvcName: cscaler-proxy-internal
 proxyGRPCSvcPort: 9090
 
 proxyDeployName: cscaler-proxy
+cscalerProxyDNSZoneName: localhost
