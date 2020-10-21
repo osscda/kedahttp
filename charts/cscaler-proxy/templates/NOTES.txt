@@ -4,7 +4,6 @@ Your release is named {{ .Release.Name }}.
 
 This release created two ingresses that can be accessed through the following URLs:
 
-- Proxy HTTP DNS: http://{{ .Values.proxyHTTPSvcName }}.{{ .Values.cscalerProxyDNSZoneName }}
 - Proxy Admin DNS: http://{{ .Values.proxyAdminSvcName }}.{{ .Values.cscalerProxyDNSZoneName }}
 
 You can access the CLI through the "capps" binary that was placed in your PATH:
