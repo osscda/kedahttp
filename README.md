@@ -76,6 +76,16 @@ __Root Commands__:
 - `run`: Creates a new app, has its own set of flags
 - `version`: Provides the version name and number
 
+### Config File
+
+The CLI will look for a config file named `cappsconfig` in three directories in order.
+
+1. First it'll look in the local directory where the script is being executed
+2. Then it'll look for it in `$HOME/.capps`
+3. Lastly it'll look for it in `$HOME`
+
+If you used the automatic installer, there will be a configuration setting which makes the created DNS zone a default zone
+
 ### Create an App
 
 ```shell
@@ -90,7 +100,8 @@ __Flags__
     > Since this command will create a new set of workloads, all the logged Docker repositories within the current cluster will work
 
 - `-s`, `--server-url`: (__Required__) The URL for the admin server. To get this, run `kubectl get svc cscaler-proxy -n cscaler -o=jsonpath="{.status.loadBalancer.ingress[*].ip}"`
-    > Without the correct admin url the scaler __will not__ work
+  - **Note**: If you used the automatic installer, it'll create a `cappsconfig` file in `$HOME/.capps` with the created DNS name. This DNS will be used as default server URL if this flag is not provided
+      > Without the correct admin url the scaler __will not__ work
 
 - `-p`, `--port`: Port number to be exposed, should be the port where the app listens to incoming connections.
 

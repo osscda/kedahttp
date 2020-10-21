@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/parnurzeal/gorequest"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func newDeployCmd() *cobra.Command {
@@ -29,7 +30,11 @@ func newDeployCmd() *cobra.Command {
 				serverProtocol = "http"
 			}
 
-			deployURL := fmt.Sprintf("%s://%s/app", serverProtocol, serverURL)
+			deployURL := fmt.Sprintf("%s://%s/app", serverProtocol, viper.GetViper().GetString("server_url"))
+			if serverURL != "" {
+				fmt.Printf("Overriding config file server URL for \"%s\"\n", serverURL)
+				deployURL = fmt.Sprintf("%s://%s/app", serverProtocol, serverURL)
+			}
 			fmt.Println("Using server ", deployURL)
 
 			resp, body, errs := cl.Post(deployURL).Send(map[string]string{
@@ -59,7 +64,7 @@ func newDeployCmd() *cobra.Command {
 		&serverURL,
 		"server-url",
 		"s",
-		"admin.wtfcncf.dev",
+		"",
 		"The URL to the admin server (without the 'http' prefix)",
 	)
 

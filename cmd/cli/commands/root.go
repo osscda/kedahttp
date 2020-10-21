@@ -48,9 +48,12 @@ func initConfig() {
 			er(err)
 		}
 
-		// Search config in home directory with name ".cobra" (without extension).
+		// Search for config files named "cappsconfig" first in local dir, then $HOME/.capps then $HOME
+		viper.AddConfigPath(".")
+		viper.AddConfigPath(home + "/.capps/")
 		viper.AddConfigPath(home)
-		viper.SetConfigName(".cobra")
+		viper.SetConfigType("yaml")
+		viper.SetConfigName("cappsconfig")
 	}
 
 	viper.AutomaticEnv()

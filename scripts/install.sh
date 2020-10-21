@@ -107,8 +107,6 @@ logln "Getting credentials"
 az aks get-credentials -g $RESOURCE_GROUP_NAME -n $AKS_NAME
 kubectl config set-context $AKS_NAME
 
-AKS_HAR_ZONE_NAME=$(az aks show -g "$RESOURCE_GROUP_NAME" -n "$AKS_NAME" -o tsv --query addonProfiles.httpApplicationRouting.config.HTTPApplicationRoutingZoneName)
-
 shoutln "=== adding helm repos ==="
 helm repo add kedacore https://kedacore.github.io/charts
 helm repo update
@@ -125,11 +123,21 @@ logln "Installing KEDA"
 helm install keda kedacore/keda --namespace "$NAMESPACE" --create-namespace
 
 logln "Installing Proxy"
+
+AKS_HAR_ZONE_NAME=$(az aks show -g "$RESOURCE_GROUP_NAME" -n "$AKS_NAME" -o tsv --query addonProfiles.httpApplicationRouting.config.HTTPApplicationRoutingZoneName)
+CONFIG_LOCATION=$HOME/.capps
+
 helm install cscaler-proxy $REPOSITORY_LOCATION/charts/cscaler-proxy -n "$NAMESPACE" --create-namespace --set cscalerProxyDNSZoneName="$AKS_HAR_ZONE_NAME"
+
+logln "Creating config file..."
+mkdir -p $CONFIG_LOCATION
+echo "server_url: $AKS_HAR_ZONE_NAME" > $CONFIG_LOCATION/cappsconfig
+echo " Config file written to '$CONFIG_LOCATION'"
 
 shoutln "=== compiling binary ==="
 
 make -C $REPOSITORY_LOCATION cli
+
 if [[ ":$PATH:" == *":/usr/local/bin:"* ]]; then
   [ ! -d "/usr/local/bin" ] && mkdir -p /usr/local/bin
   mv $REPOSITORY_LOCATION/bin/capps /usr/local/bin
