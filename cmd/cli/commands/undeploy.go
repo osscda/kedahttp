@@ -19,10 +19,10 @@ func newUndeployCmd() *cobra.Command {
 		Long:  `Remove an app completely. This will delete all resources associated with the app, including the running container and scaling configuration`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			appName := args[0]
 			if len(args) != 1 {
 				log.Fatalf("You need to pass the deployment name")
 			}
-			cl := gorequest.New()
 
 			serverProtocol := "https"
 			if acceptsHTTP == true {
@@ -36,7 +36,10 @@ func newUndeployCmd() *cobra.Command {
 			}
 			fmt.Println("Using server ", deployURL)
 
-			resp, body, errs := cl.Delete(deployURL).Send(nil).End()
+			cl := gorequest.New().Delete(deployURL)
+			cl.QueryData.Add("name", appName)
+
+			resp, body, errs := cl.Send(nil).End()
 			if len(errs) > 0 {
 				var result error
 				log.Printf("Error deleting: %v", errs)
@@ -46,7 +49,7 @@ func newUndeployCmd() *cobra.Command {
 				log.Fatalf("Undeploy failed: %s", body)
 			}
 
-			log.Printf("App %s deleted!", args[0])
+			log.Printf("App %s deleted!", appName)
 			return nil
 		},
 	}
