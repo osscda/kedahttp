@@ -23,7 +23,7 @@ func getSvcName(host string) (string, error) {
 // TODO: use proxy handler: https://echo.labstack.com/middleware/proxy ??
 func newForwardingHandler() echo.HandlerFunc {
 	return func(c echo.Context) error {
-
+		log.Printf("Host: %s, URLHost: %s", c.Request().Host, c.Request().URL.Host)
 		svcName, err := getSvcName(c.Request().Host)
 		if err != nil {
 			log.Printf("Couldn't find service name (%s)", err)
