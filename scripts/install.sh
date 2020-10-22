@@ -131,7 +131,7 @@ helm install cscaler-proxy $REPOSITORY_LOCATION/charts/cscaler-proxy -n "$NAMESP
 
 logln "Creating config file..."
 mkdir -p $CONFIG_LOCATION
-echo "server_url: $AKS_HAR_ZONE_NAME" > $CONFIG_LOCATION/cappsconfig
+echo "server_url: cscaler-admin.$AKS_HAR_ZONE_NAME" > $CONFIG_LOCATION/cappsconfig
 echo " Config file written to '$CONFIG_LOCATION'"
 
 shoutln "=== compiling binary ==="
