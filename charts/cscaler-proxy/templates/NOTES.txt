@@ -1,0 +1,15 @@
+Thank you for installing {{ .Chart.Name }}.
+
+Your release is named {{ .Release.Name }}.
+
+This release created two ingresses that can be accessed through the following URLs:
+
+- Proxy Admin DNS: http://{{ .Values.proxyAdminSvcName }}.{{ .Values.cscalerProxyDNSZoneName }}
+
+You can access the CLI through the "capps" binary that was placed in your PATH:
+
+- $ capps run <app-name> --image <repository>/<image>:<tag> --port <number> --server-url <url>
+
+Use the admin DNS provided above as the server URL.
+
+NOTE: It might take a couple of minutes before the DNS record is propagated

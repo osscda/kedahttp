@@ -1,5 +1,4 @@
 #!/bin/bash
-#!/bin/bash
 
 function shoutln {
   echo
@@ -30,9 +29,6 @@ function pause () {
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 REPOSITORY_LOCATION=/tmp/containerscaler
 rm -rf $REPOSITORY_LOCATION
-
-curl -sL https://raw.githubusercontent.com/arschles/containerscaler/main/scripts/_helpers/logo.txt?token=AAYNMMFUJFX4XC2ZT3FTXDC7SB344 | cat
-echo
 
 shoutln "=== container scaler init script ==="
 echo
@@ -88,11 +84,11 @@ do
 done
 
 resource_group_exists=$(az group list --query "[?name =='$RESOURCE_GROUP_NAME'].name" -o tsv)
-if [ ! -z "$resource_group_exists" ]
+if [ -n "$resource_group_exists" ]
 then
   logln "Resource group with this name already exists, using it..."
 else
-  az group create -n $RESOURCE_GROUP_NAME --location $LOCATION
+  az group create -n "$RESOURCE_GROUP_NAME" --location "$LOCATION"
 fi
 
 while read -p "==> What will be the name of the CLUSTER? " AKS_NAME && [[ -z "$AKS_NAME" ]]
@@ -102,9 +98,8 @@ done
 
 logln "Creating Azure Resource"
 echo "  Be patient, this can take a while..."
-az aks create -g $RESOURCE_GROUP_NAME -n $AKS_NAME --node-count=2 --generate-ssh-keys --node-vm-size=Standard_B2s --location $LOCATION --enable-addons http_application_routing
-[ $? -ne 0 ] && echo "ERROR: Error creating Azure Resources, stopping script"
-exit 2
+az aks create -g "$RESOURCE_GROUP_NAME" -n "$AKS_NAME" --node-count=2 --generate-ssh-keys --node-vm-size=Standard_B2s --location "$LOCATION" --enable-addons=http_application_routing
+[ $? -ne 0 ] && echo "ERROR: Error creating Azure Resources, stopping script" && exit 2
 
 echo "  Cluster install finished!"
 
@@ -117,23 +112,32 @@ helm repo add kedacore https://kedacore.github.io/charts
 helm repo update
 
 shoutln "=== cloning repository ==="
-git clone https://github.com/arschles/containerscaler $REPOSITORY_LOCATION
+git clone https://github.com/arschles/containerscaler "$REPOSITORY_LOCATION"
 
 shoutln "=== installing cscaler ==="
 
 read -p "==> What will be the name of the NAMESPACE where I should install everything? [cscaler]" NAMESPACE
 NAMESPACE=${NAMESPACE:-cscaler}
-echo $NAMESPACE
 
 logln "Installing KEDA"
-helm install keda kedacore/keda --namespace $NAMESPACE --create-namespace
+helm install keda kedacore/keda --namespace "$NAMESPACE" --create-namespace
 
 logln "Installing Proxy"
-helm install cscaler-proxy $REPOSITORY_LOCATION/charts/cscaler-proxy -n $NAMESPACE --create-namespace
+
+AKS_HAR_ZONE_NAME=$(az aks show -g "$RESOURCE_GROUP_NAME" -n "$AKS_NAME" -o tsv --query addonProfiles.httpApplicationRouting.config.HTTPApplicationRoutingZoneName)
+CONFIG_LOCATION=$HOME/.capps
+
+helm install cscaler-proxy $REPOSITORY_LOCATION/charts/cscaler-proxy -n "$NAMESPACE" --create-namespace --set cscalerProxyDNSZoneName="$AKS_HAR_ZONE_NAME"
+
+logln "Creating config file..."
+mkdir -p $CONFIG_LOCATION
+echo "server_url: cscaler-admin.$AKS_HAR_ZONE_NAME" > $CONFIG_LOCATION/cappsconfig
+echo " Config file written to '$CONFIG_LOCATION'"
 
 shoutln "=== compiling binary ==="
 
 make -C $REPOSITORY_LOCATION cli
+
 if [[ ":$PATH:" == *":/usr/local/bin:"* ]]; then
   [ ! -d "/usr/local/bin" ] && mkdir -p /usr/local/bin
   mv $REPOSITORY_LOCATION/bin/capps /usr/local/bin
@@ -144,6 +148,5 @@ else
 fi
 
 shout "===! finished !==="
-
-logln "Use \"capps\" to access the CLI"
+logln "Use 'capps' to access the CLI"
 exit 0

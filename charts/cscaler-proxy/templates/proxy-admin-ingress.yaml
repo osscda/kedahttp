@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ .Values.proxyAdminSvcName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    name: {{ .Values.proxyAdminSvcName }}
+    app: cscaler
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+  annotations:
+    kubernetes.io/ingress.class: addon-http-application-routing
+spec:
+  rules:
+    - host: {{ .Values.proxyAdminSvcName }}.{{ .Values.cscalerProxyDNSZoneName }}
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: {{ .Values.proxyAdminSvcName }}
+              servicePort: {{ .Values.proxyAdminSvcPort }}

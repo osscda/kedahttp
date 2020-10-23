@@ -14,16 +14,19 @@ import (
 func getSvcName(host string) (string, error) {
 	hostSpl := strings.Split(host, ".")
 	log.Printf("split for host %s: %v", host, hostSpl)
-	if len(hostSpl) != 3 {
+	possibleHost := hostSpl[0]
+
+	if possibleHost == "" {
 		return "", fmt.Errorf("Host string %s malformed", host)
 	}
-	return hostSpl[0], nil
+
+	return possibleHost, nil
 }
 
 // TODO: use proxy handler: https://echo.labstack.com/middleware/proxy ??
 func newForwardingHandler() echo.HandlerFunc {
 	return func(c echo.Context) error {
-
+		log.Printf("Host: %s sent a request", c.Request().Host)
 		svcName, err := getSvcName(c.Request().Host)
 		if err != nil {
 			log.Printf("Couldn't find service name (%s)", err)
