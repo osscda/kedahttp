@@ -1,5 +1,8 @@
 use structopt::StructOpt;
 use std::fmt::Debug;
+mod commands;
+use reqwest::Error;
+use std::result::Result;
 
 #[derive(Debug, StructOpt)]
 enum Command {
@@ -22,15 +25,32 @@ struct KedaHTTP {
     cmd: Command,
 }
 
-fn main() {
+#[tokio::main]
+async fn main() -> Result<(), Error> {
     let keda = KedaHTTP::from_args();
-    
+    let admin_url = format!("{}/app", commands::DEPLOY_URL);
     match keda.cmd {
         Command::Rm{app_name} => {
-            println!("remove {}!", app_name);
+            match commands::rm::rm(&admin_url, &app_name).await {
+                Ok(_) => {
+                    println!("Removed {}", app_name)
+                },
+                Err(e) => {
+                    println!("Error removing app ({})", e)
+                },
+            }
         },
         Command::Run{app_name, image, port} => {
-            println!("run {} on port {}, named {}!", image, port, app_name);
+            match commands::run::run(&admin_url, &app_name, &image, port).await {
+                Ok(_) => {
+                    println!("Deployed app")
+
+                },
+                Err(e) => {
+                    println!("Error deploying ({})", e)
+                },
+            };
         },
-    }
+    };
+    Ok(())
 }
