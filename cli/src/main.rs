@@ -33,7 +33,7 @@ async fn main() -> Result<(), Error> {
     let mut app_client = ProdAppClient::new(&admin_url);
     match keda.cmd {
         Command::Rm{app_name} => {
-            match commands::rm::rm(&mut app_client, &app_name).await {
+            match commands::rm::rm(&mut app_client, &app_name) {
                 Ok(_) => {
                     println!("Removed {}", app_name)
                 },
@@ -43,7 +43,7 @@ async fn main() -> Result<(), Error> {
             }
         },
         Command::Run{app_name, image, port} => {
-            match commands::run::run(&mut app_client, &app_name, &image, port).await {
+            match commands::run::run(&mut app_client, &app_name, &image, port) {
                 Ok(_) => {
                     println!("Deployed app")
 

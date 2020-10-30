@@ -1,28 +1,27 @@
-use reqwest::{Error};
-use std::result::Result;
-use crate::commands::client::AppClient;
+use crate::commands::client::{AppClient, Res};
 
-pub async fn rm(ac: &mut impl AppClient, app_name: &str)
--> Result<(), Error> {
-    ac.rm_app(app_name).await
+pub fn rm(ac: &mut impl AppClient, app_name: &str)
+-> Res {
+    ac.rm_app(app_name)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use futures::executor::block_on;
-    use crate::commands::client::TestAppClient;
+    use crate::commands::client::test::TestAppClient;
 
 
     #[test]
     fn test_run() {
         let mut cl = TestAppClient::new();
-        let res_fut = rm(&mut cl, "testapp");
-        let res = block_on(res_fut).unwrap();
-        
+        let res = rm(&mut cl, "testapp").unwrap();
+
         assert_eq!(res, ());
         assert_eq!(cl.rm_counter, 1);
+        assert_eq!(cl.rm_calls.len(), 1);
+        assert_eq!(cl.rm_calls[0], "testapp".to_string());
         assert_eq!(cl.add_counter, 0);
+        assert_eq!(cl.add_calls.len(), 0);
     }
 
 }
