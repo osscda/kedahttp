@@ -12,6 +12,23 @@
             "program": "${fileDirname}",
             "env": {},
             "args": []
+        },
+        // the Rust task for the CLI. might be a little older, thanks
+        // to @nyxiative on Twitch for the source. 
+        {
+            "name": "cargo run",
+            "type": "shell",
+            "command": "cargo",
+            "args": [
+                "run",
+                // "--release",
+                // "--",
+                // "arg1"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         }
     ]
 }
