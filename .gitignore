@@ -35,4 +35,9 @@ cli/target/
 # More information here https://doc.rust-lang.org/cargo/guide/cargo-toml-vs-cargo-lock.html
 cli/Cargo.lock
 
+admin/target
+admin/Cargo.lock
+
+/target
+
 # End of https://www.toptal.com/developers/gitignore/api/rust
