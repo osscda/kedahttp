@@ -26,8 +26,7 @@ struct KedaHTTP {
     cmd: Command,
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Error> {
+fn main() -> Result<(), Error> {
     let keda = KedaHTTP::from_args();
     let admin_url = format!("{}/app", commands::DEPLOY_URL);
     let mut app_client = ProdAppClient::new(&admin_url);

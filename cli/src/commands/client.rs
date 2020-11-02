@@ -10,13 +10,15 @@ pub trait AppClient {
 }
 
 pub struct ProdAppClient {
-    base_deploy_url: String
+    base_deploy_url: String,
+    client: reqwest::blocking::Client
 }
 
 impl ProdAppClient {
     pub fn new(base_deploy_url: &str) -> ProdAppClient {
         ProdAppClient{
             base_deploy_url: base_deploy_url.to_string(),
+            client: reqwest::blocking::Client::new(),
         }
     }
 }
@@ -25,14 +27,13 @@ impl AppClient for ProdAppClient {
     fn add_app(&mut self, app_name: &str, app_image: &str, port: u32)
     -> Res {
         let port_string = port.to_string();
-        let client = reqwest::blocking::Client::new();
         let mut map = HashMap::new();
         map.insert("name", app_name);
         map.insert("image", &app_image);
         map.insert("port", &port_string);
     
         let request_url = format!("{}?name={}", self.base_deploy_url, app_name);
-        client.post(&request_url)
+        self.client.post(&request_url)
         .json(&map)
         .send()
         .map(|_| ())
@@ -40,12 +41,11 @@ impl AppClient for ProdAppClient {
 
     fn rm_app(&mut self, app_name: &str)
     -> Res {
-        let client = reqwest::blocking::Client::new();
         let mut map = HashMap::new();
         map.insert("name", app_name);
         
         let request_url = format!("{}?name={}", self.base_deploy_url, app_name);
-        client.delete(&request_url)
+        self.client.delete(&request_url)
         .json(&map)
         .send()
         .map(|_| ())
