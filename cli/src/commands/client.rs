@@ -5,6 +5,11 @@ use std::collections::HashMap;
 pub type Res = Result<(), Error>;
 
 pub trait AppClient {
+    // these have to be &mut self because the TestAppClient needs
+    // to modify internal state. The production implementation
+    // doesn't need to do so, so it would be nice to figure out
+    // how to make this just "self" and deal with the test app client
+    // in a different way
     fn add_app(&mut self, app_name: &str, app_image: &str, port: u32) -> Res;
     fn rm_app(&mut self, app_name: &str) -> Res;
 }

@@ -1,9 +1,10 @@
 use structopt::StructOpt;
 use std::fmt::Debug;
 mod commands;
+use commands::{rm, run, client::ProdAppClient};
 use reqwest::Error;
 use std::result::Result;
-use commands::client::ProdAppClient;
+
 
 #[derive(Debug, StructOpt)]
 enum Command {
@@ -33,7 +34,7 @@ async fn main() -> Result<(), Error> {
     let mut app_client = ProdAppClient::new(&admin_url);
     match keda.cmd {
         Command::Rm{app_name} => {
-            match commands::rm::rm(&mut app_client, &app_name) {
+            match rm::rm(&mut app_client, &app_name) {
                 Ok(_) => {
                     println!("Removed {}", app_name)
                 },
@@ -43,7 +44,7 @@ async fn main() -> Result<(), Error> {
             }
         },
         Command::Run{app_name, image, port} => {
-            match commands::run::run(&mut app_client, &app_name, &image, port) {
+            match run::run(&mut app_client, &app_name, &image, port) {
                 Ok(_) => {
                     println!("Deployed app")
 

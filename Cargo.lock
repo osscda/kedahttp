@@ -17,14 +17,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ee2a4ec343196209d6594e19543ae87a39f96d5534d7174822a3ad825dd6ed7e"
 
 [[package]]
-name = "admin"
-version = "0.1.0"
-dependencies = [
- "k8s-openapi 0.9.0",
- "kube",
-]
-
-[[package]]
 name = "aho-corasick"
 version = "0.7.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -211,6 +203,14 @@ name = "constant_time_eq"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "245097e9a4535ee1e3e3931fcfcd55a796a44c643e8596ff6566d68f09b87bbc"
+
+[[package]]
+name = "controller"
+version = "0.1.0"
+dependencies = [
+ "k8s-openapi 0.9.0",
+ "kube",
+]
 
 [[package]]
 name = "core-foundation"
