@@ -72,7 +72,8 @@ async fn main() -> Result<(), kube::Error>{
 
     let context = Context::new(Data{client});
     Controller::new(app_api, default_list_params.clone())
-    .owns(deployments_api, default_list_params.clone()) // TODO: app needs to own more shit
+    // TODO: app needs to own more subresources
+    .owns(deployments_api, default_list_params.clone())
     .run(reconcile, error_policy, context)
     .for_each(|res| async move {
         match res {
@@ -82,6 +83,7 @@ async fn main() -> Result<(), kube::Error>{
         }
     })
     .await;
+    
 
     // let newApp = App::new("myapp", AppSpec{
     //     name: String::from("MyNewApp"),
@@ -120,7 +122,7 @@ fn error_policy(_error: &Error, _ctx: Context<Data>) -> ReconcilerAction {
 }
 
 
-async fn reconcile(app: App, ctx: Context<Data>) -> Result<ReconcilerAction, Error> {
+async fn reconcile(_: App, _: Context<Data>) -> Result<ReconcilerAction, Error> {
 
     // TODO: implement!
 
