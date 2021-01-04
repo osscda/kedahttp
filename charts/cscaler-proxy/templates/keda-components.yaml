@@ -8,7 +8,7 @@ spec:
     kind: Deployment
     name: cscaler-proxy
   maxReplicaCount: 1000 # Optional. Default: 100
-  minReplicaCount: 0
+  minReplicaCount: 1
   cooldownPeriod: 10
   pollingInterval: 1
   triggers:
