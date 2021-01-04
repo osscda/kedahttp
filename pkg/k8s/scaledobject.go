@@ -34,7 +34,7 @@ func NewScaledObject(namespace, name, deploymentName, scalerAddress string) *uns
 	// https://github.com/kedacore/keda/blob/v2/api/v1alpha1/scaledobject_types.go
 	return &unstructured.Unstructured{
 		Object: map[string]interface{}{
-			"apiVersion": "keda.k8s.io/v1alpha1",
+			"apiVersion": "keda.sh/v1alpha1",
 			"kind":       "ScaledObject",
 			"metadata": map[string]interface{}{
 				"name":      name,
@@ -46,7 +46,8 @@ func NewScaledObject(namespace, name, deploymentName, scalerAddress string) *uns
 				"maxReplicaCount": 1000,
 				"pollingInterval": 1,
 				"scaleTargetRef": map[string]string{
-					"deploymentName": deploymentName,
+					"kind": "Deployment",
+					"name": deploymentName,
 				},
 				"triggers": []interface{}{
 					map[string]interface{}{

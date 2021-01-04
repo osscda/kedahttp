@@ -1,11 +1,12 @@
 # this is here so that keda can scale the proxy itself in the future
-apiVersion: keda.k8s.io/v1alpha1
+apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
   name: cscaler-external-scaler
 spec:
   scaleTargetRef:
-    deploymentName: cscaler-proxy
+    kind: Deployment
+    name: cscaler-proxy
   maxReplicaCount: 1000 # Optional. Default: 100
   minReplicaCount: 0
   cooldownPeriod: 10
@@ -14,4 +15,3 @@ spec:
     - type: external
       metadata:
         scalerAddress: "{{ .Values.proxyGRPCSvcName }}.{{ .Release.Namespace }}:{{ .Values.proxyGRPCSvcPort }}"
-        key1: proxyCounter
