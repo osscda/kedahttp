@@ -13,7 +13,7 @@ You need to install KEDA first. Do so with these commands:
 ```shell
 helm repo add kedacore https://kedacore.github.io/charts
 helm repo update
-helm install keda kedacore/keda --namespace cscaler --create-namespace
+helm install keda kedacore/keda --n capps --create-namespace
 ```
 
 >These commands are similar to those on the [official install page](https://keda.sh/docs/1.5/deploy/#helm), but we're installing in a different namespace.
@@ -23,20 +23,22 @@ helm install keda kedacore/keda --namespace cscaler --create-namespace
 The proxy is responsible for receiving the requests, so you'll need to install it.
 
 ```shell
-helm upgrade --install cscaler ./charts/cscaler-proxy -n cscaler --create-namespace
+helm upgrade --install capps ./charts/cscaler-proxy -n capps --create-namespace
 ```
 
-To upgrade:
-
-```shell
-helm upgrade cscaler ./charts/cscaler-proxy -n cscaler
-```
+>You can use the above command to upgrade your installation as well
 
 After the install, run the following command to fetch the public IP of the proxy service:
 
 ```shell
 kubectl get svc cscaler-proxy -n cscaler -o=jsonpath='{.status.loadBalancer.ingress[*].ip}'
 ```
+
+To delete the proxy, but not KEDA, run this:
+
+```shell
+helm delete -n capps capps
+
 
 ### Build the app
 
