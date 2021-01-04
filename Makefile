@@ -1,4 +1,5 @@
 BIN_DIR := ./bin
+GIT_SHA :=  $(shell git rev-parse --short HEAD)
 
 .PHONY: proxy
 proxy:
@@ -7,7 +8,6 @@ proxy:
 .PHONY: runproxy
 runproxy:
 	go run ./cmd/proxy
-
 
 .PHONY: proto
 proto:
@@ -23,8 +23,8 @@ dockerpush: dockerbuild
 
 .PHONY: cli
 cli:
-	cd cli && cargo build
-	cp cli/target/debug/cli cscaler
+	cargo build --bin cli
+	cp target/debug/cli ./cscaler
 
 .PHONY: clean-cli
 clean-cli:

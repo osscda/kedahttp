@@ -14,17 +14,24 @@ import (
 func newAdminDeleteAppHandler(
 	k8sCl *kubernetes.Clientset,
 	dynCl dynamic.Interface,
+	namespace string,
 ) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		logger := c.Logger()
 		ctx := c.Request().Context()
 		deployName := c.QueryParam("name")
-		scaledObjectCl := k8s.NewScaledObjectClient(dynCl).Namespace("cscaler")
+		scaledObjectCl := k8s.NewScaledObjectClient(dynCl).Namespace(namespace)
 		if deployName == "" {
 			logger.Errorf("'name' query param not found")
 			return c.String(400, "'name' query param required")
 		}
-		if err := k8s.DeleteService(ctx, deployName, k8sCl.CoreV1().Services("cscaler")); err != nil {
+		delSvcErr := k8s.DeleteService(
+			ctx,
+			namespace,
+			deployName,
+			k8sCl.CoreV1().Services(namespace),
+		)
+		if delSvcErr != nil {
 			logger.Errorf("Deleting service %s (%s)", err)
 			return c.String(500, "deleting service")
 		}
@@ -44,7 +51,8 @@ func newAdminDeleteAppHandler(
 func newAdminCreateAppHandler(
 	k8sCl *kubernetes.Clientset,
 	dynCl dynamic.Interface,
-	scalerAddress string,
+	scalerAddress,
+	namespace string,
 ) echo.HandlerFunc {
 
 	type reqBody struct {
@@ -69,23 +77,23 @@ func newAdminCreateAppHandler(
 			return c.String(400, "invalid port")
 		}
 
-		appsCl := k8sCl.AppsV1().Deployments("cscaler")
-		deployment := k8s.NewDeployment(ctx, "cscaler", req.Name, req.ContainerImage, int32(portInt))
+		appsCl := k8sCl.AppsV1().Deployments(namespace)
+		deployment := k8s.NewDeployment(ctx, namespace, req.Name, req.ContainerImage, int32(portInt))
 		// TODO: watch the deployment until it reaches ready state
 		if _, err := appsCl.Create(ctx, deployment, metav1.CreateOptions{}); err != nil {
 			c.Logger().Errorf("Creating deployment (%s)", err)
 			return c.String(500, "creating deployment")
 		}
 
-		coreCl := k8sCl.CoreV1().Services("cscaler")
-		service := k8s.NewService("cscaler", req.Name, int32(portInt))
+		coreCl := k8sCl.CoreV1().Services(namespace)
+		service := k8s.NewService(namespace, req.Name, int32(portInt))
 		if _, err := coreCl.Create(ctx, service, metav1.CreateOptions{}); err != nil {
 			c.Logger().Errorf("Creating service (%s)", err)
 			return c.String(500, "creating service")
 		}
 		scaledObjectCl := k8s.NewScaledObjectClient(dynCl)
-		_, err = scaledObjectCl.Namespace("cscaler").Create(ctx, k8s.NewScaledObject(
-			"cscaler",
+		_, err = scaledObjectCl.Namespace(namespace).Create(ctx, k8s.NewScaledObject(
+			namespace,
 			req.Name,
 			req.Name,
 			scalerAddress,

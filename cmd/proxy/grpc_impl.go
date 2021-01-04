@@ -36,7 +36,7 @@ func (e *impl) GetMetricSpec(_ context.Context, sor *externalscaler.ScaledObject
 	return &externalscaler.GetMetricSpecResponse{
 		MetricSpecs: []*externalscaler.MetricSpec{
 			{
-				MetricName: "earthquakeThreshold",
+				MetricName: "proxyCounter",
 				TargetSize: 100,
 			},
 		},
@@ -47,7 +47,7 @@ func (e *impl) GetMetrics(_ context.Context, metricRequest *externalscaler.GetMe
 	return &externalscaler.GetMetricsResponse{
 		MetricValues: []*externalscaler.MetricValue{
 			{
-				MetricName:  "earthquakeThreshold",
+				MetricName:  "proxyCounter",
 				MetricValue: int64(e.reqCounter.get()),
 			},
 		},

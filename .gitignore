@@ -39,3 +39,6 @@ cli/Cargo.lock
 
 # the cli binary
 /cscaler
+
+# rust build directory from `make cli`
+/target

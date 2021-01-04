@@ -13,6 +13,5 @@ spec:
   triggers:
     - type: external
       metadata:
-        scalerAddress: {{ .Values.proxyGRPCSvcName }}.{{ .Release.Namespace }}:{{ .Values.proxyGRPCSvcPort }}
+        scalerAddress: "{{ .Values.proxyGRPCSvcName }}.{{ .Release.Namespace }}:{{ .Values.proxyGRPCSvcPort }}"
         key1: proxyCounter
-

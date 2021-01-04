@@ -28,7 +28,10 @@ func init() {
 }
 
 func main() {
-
+	namespace := os.Getenv("CSCALER_NAMESPACE")
+	if namespace == "" {
+		log.Fatalf("CSCALER_NAMESPACE missing")
+	}
 	scalerAddress := os.Getenv("CSCALER_SCALER_ADDRESS")
 	if scalerAddress == "" {
 		log.Fatalf("Need CSCALER_SCALER_ADDRESS")
@@ -52,8 +55,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	adminE.POST("/app", newAdminCreateAppHandler(clientset, dynCl, scalerAddress))
-	adminE.DELETE("/app", newAdminDeleteAppHandler(clientset, dynCl))
+	adminE.POST("/app", newAdminCreateAppHandler(clientset, dynCl, scalerAddress, namespace))
+	adminE.DELETE("/app", newAdminDeleteAppHandler(clientset, dynCl, namespace))
 	adminE.GET("/pong", pongHandler)
 	adminE.GET("/counter", func(c echo.Context) error {
 		fmt.Fprintf(c.Response(), "%d", reqCounter.get())

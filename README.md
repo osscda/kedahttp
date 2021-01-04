@@ -3,26 +3,9 @@
 # KEDA HTTP
 
 This project implements a prototype of auto-scaling containers based on HTTP requests. As requests come into the system, the container(s) that are equipped to handle that request may or may not be running and ready to accept it. If there are sufficient containers available, the request is routed to one of them.  If there are not, a container is started and the request is routed to it when it's ready, courtesy of KEDA.
-
-## Architecture
-
-This system has three components:
-
-- [CScaler Proxy](./cmd/proxy)
-- [KEDA](https://keda.sh)
-
-The **proxy** receives incoming HTTP traffic, emits events to NATS streaming, and forwards to a backend container.
-
-KEDA is responsible for consuming events from the proxy and scaling the backend containers appropriately.
-
 ## Installation
 
-Run `curl -L https://raw.githubusercontent.com/arschles/containerscaler/main/scripts/install.sh?token=AAYNMMCKX2PJV4T74AKS7XS7SB4RQ | bash`
-
-## Manual Installation
-
 To install the application you'll need a __Kubernetes Cluster__ up and running.
-
 ### Install KEDA
 
 You need to install KEDA first. Do so with these commands:
@@ -40,7 +23,7 @@ helm install keda kedacore/keda --namespace cscaler --create-namespace
 The proxy is responsible for receiving the requests, so you'll need to install it.
 
 ```shell
-helm install cscaler ./charts/cscaler-proxy -n cscaler --create-namespace
+helm upgrade --install cscaler ./charts/cscaler-proxy -n cscaler --create-namespace
 ```
 
 To upgrade:

@@ -8,3 +8,5 @@ LICENSE
 Makefile
 README.md
 proxy
+/cli
+/target
