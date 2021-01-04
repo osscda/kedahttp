@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Values.proxyDeployName }}
+  namespace: {{ .Release.Namespace }}
   labels:
     app: cscaler
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
