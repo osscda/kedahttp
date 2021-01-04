@@ -32,7 +32,7 @@ func newAdminDeleteAppHandler(
 			k8sCl.CoreV1().Services(namespace),
 		)
 		if delSvcErr != nil {
-			logger.Errorf("Deleting service %s (%s)", err)
+			logger.Errorf("Deleting service %s (%s)", delSvcErr)
 			return c.String(500, "deleting service")
 		}
 		if err := k8s.DeleteDeployment(ctx, deployName, k8sCl.AppsV1().Deployments("cscaler")); err != nil {
