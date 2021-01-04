@@ -36,3 +36,6 @@ cli/target/
 cli/Cargo.lock
 
 # End of https://www.toptal.com/developers/gitignore/api/rust
+
+# the cli binary
+/cscaler

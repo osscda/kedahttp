@@ -23,7 +23,8 @@ dockerpush: dockerbuild
 
 .PHONY: cli
 cli:
-	go build -v -o ./bin/capps ./cmd/cli
+	cd cli && cargo build
+	cp cli/target/debug/cli cscaler
 
 .PHONY: clean-cli
 clean-cli:
