@@ -36,10 +36,10 @@ spec:
           - name: "CSCALER_SCALER_ADDRESS"
             value: "{{ .Values.proxyGRPCSvcName }}.{{ .Release.Namespace }}:{{ .Values.proxyGRPCSvcPort}}"
           - name: ADMIN_PORT
-            value: "{{ .Values.proxyAdminSvcPort | quote }}"
+            value: {{ .Values.proxyAdminSvcPort | quote }}
           - name: PROXY_PORT
-            value: "{{ .Values.proxyHTTPSvcPort | quote }}"
+            value: {{ .Values.proxyHTTPSvcPort | quote }}
           - name: GRPC_PORT
-            value: "{{ .Values.proxyGRPCSvcPort | quote }}"
+            value: {{ .Values.proxyGRPCSvcPort | quote }}
           - name: CSCALER_NAMESPACE
-            value: "{{ .Release.Namespace }}"
+            value: {{ .Release.Namespace }}
