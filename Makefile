@@ -11,7 +11,12 @@ runproxy:
 
 .PHONY: proto
 proto:
-	protoc kedascaler.external.proto --go_out=plugins=grpc:externalscaler
+	protoc \
+	--go_out=externalscaler \
+	--go_opt=paths=source_relative \
+	--go-grpc_out=externalscaler \
+	--go-grpc_opt=paths=source_relative \
+	kedascaler.external.proto
 
 .PHONY: dockerbuild
 dockerbuild:
